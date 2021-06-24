@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "StreamAMGSDK"
-  spec.version      = "1.1.0"
+  spec.version      = "0.1"
   spec.summary      = "Stream AMG SDK"
   spec.swift_versions = "5"
 
@@ -10,7 +10,7 @@ Pod::Spec.new do |spec|
   Core dependency for the Stream AMG SDK. Includes CloudMatrix, StreamPlay, Authentication and AMGPlayKit
                    DESC
 
-  spec.homepage     = "https://github.com/StreamAMG/StreamAMGSDK-iOS"
+  spec.homepage     = "https://github.com/StreamAMG/streamamg-sdk-ios"
 
   spec.license      = { :type => 'AGPLv3', :text => 'AGPLv3' }
 
@@ -20,7 +20,10 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '11.0'
     spec.source_files  = "Source/**/*.swift"
 
-  spec.source = { :git => 'https://github.com/StreamAMG/StreamAMGSDK-iOS', :branch => 'ZEUS-885_Add_PlayKit', :submodules => true}
+  spec.source = { :git => 'https://github.com/StreamAMG/streamamg-sdk-ios.git'}
+
+  spec.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
+  spec.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
 
   spec.subspec 'Core' do |sdkcore|
   spec.requires_arc = true
