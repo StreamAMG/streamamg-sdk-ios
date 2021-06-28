@@ -18,7 +18,6 @@ Pod::Spec.new do |spec|
 
   spec.platform     = :ios
   spec.ios.deployment_target = '11.0'
-  spec.tvos.deployment_target = '13.0'
 
   spec.source_files  = "Source/**/*.swift"
 
@@ -58,14 +57,5 @@ playkit.dependency 'PlayKitProviders', '1.11.0'
 playkit.dependency 'google-cast-sdk-no-bluetooth', '4.5.3'
 playkit.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.xcassets'}
 end
-
-spec.subspec 'PlayKitTV' do |playkittv|
-playkittv.source_files  = "Source/StreamSDKPlayKit/**/*.*"
-playkittv.dependency 'PlayKit', '3.20.0'
-playkittv.dependency 'PlayKit_IMA', '1.10.0'
-playkittv.dependency 'PlayKitProviders', '1.11.0'
-playkittv.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.xcassets'}
-end
-
 
 end
