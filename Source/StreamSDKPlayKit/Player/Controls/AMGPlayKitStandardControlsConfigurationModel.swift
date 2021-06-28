@@ -68,16 +68,19 @@ public struct AMGPlayKitStandardControlsConfigurationModel: Codable {
     var fadeInTime = 0
     var fadeOutTime = 0
     var fadeOutAfter = 5000
-    var slideBarPosition: AMGControlPosition = .bottom
+ //   var slideBarPosition: AMGControlPosition = .bottom
     var trackTimeShowing = false
-    var currentTimeShowing = false
+ //   var currentTimeShowing = false
 
     var isLiveImage: String? = nil
     var logoImage: String? = nil
     var playImage: String? = nil
     var pauseImage: String? = nil
-    var skipForwardTime = 5000
-    var skipBackwardTime = 5000
+    var skipForwardImage: String? = nil
+    var skipBackwardImage: String? = nil
+    var fullScreenImage: String? = nil
+    var skipForwardTime = 10000
+    var skipBackwardTime = 10000
     
     var hideFullscreen = false
     var hideFullscreenOnFS = false
@@ -103,7 +106,70 @@ public class AMGControlBuilder {
     var skipBackwardTime = 5000
     var hideFullscreen = false
     var hideFullscreenOnFS = false
+    var isLiveImage: String? = nil
+    var logoImage: String? = nil
+    var playImage: String? = nil
+    var pauseImage: String? = nil
+    var skipForwardImage: String? = nil
+    var skipBackwardImage: String? = nil
+    var fullScreenImage: String? = nil
 
+    
+    /**
+    Specify the image to use for the play button
+     */
+    public func playImage(_ image: String) -> AMGControlBuilder {
+        self.playImage = image
+        return self
+    }
+    
+    /**
+    Specify the image to use for the pause button
+     */
+    public func pauseImage(_ image: String) -> AMGControlBuilder {
+        self.pauseImage = image
+        return self
+    }
+    
+    /**
+    Specify the image to use for the fullscreen button
+     */
+    public func fullScreenImage(_ image: String) -> AMGControlBuilder {
+        self.fullScreenImage = image
+        return self
+    }
+    
+    /**
+    Specify the image to use for the skip forwards button
+     */
+    public func skipForwardImage(_ image: String) -> AMGControlBuilder {
+        self.skipForwardImage = image
+        return self
+    }
+    
+    /**
+    Specify the image to use for the skip backward button
+     */
+    public func skipBackwardImage(_ image: String) -> AMGControlBuilder {
+        self.skipBackwardImage = image
+        return self
+    }
+    
+    /**
+    Specify the image to use for the 'is live'
+     */
+    public func isLiveImage(_ image: String) -> AMGControlBuilder {
+        self.isLiveImage = image
+        return self
+    }
+    
+    /**
+    Specify the image to use for the logo / watermark
+     */
+    public func logoImage(_ image: String) -> AMGControlBuilder {
+        self.logoImage = image
+        return self
+    }
 
     /**
      Not currently supported
@@ -215,7 +281,11 @@ public class AMGControlBuilder {
      Returns a complete and valid AMGPlayKitStandardControlsConfigurationModel
      */
     public func build() -> AMGPlayKitStandardControlsConfigurationModel {
-        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, slideBarPosition: slideBarPosition, trackTimeShowing: trackTimeShowing, currentTimeShowing: currentTimeShowing, hideFullscreen: hideFullscreen, hideFullscreenOnFS: hideFullscreenOnFS)
+        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideFullscreenOnFS: hideFullscreenOnFS)
+        
+        
+        
+        //return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, slideBarPosition: slideBarPosition, trackTimeShowing: trackTimeShowing, currentTimeShowing: currentTimeShowing, hideFullscreen: hideFullscreen, hideFullscreenOnFS: hideFullscreenOnFS)
     }
 
 }

@@ -21,7 +21,8 @@ extension AMGPlayKit {
         }
     controlUI = AMGPlayKitStandardControl(hostView: self, delegate: self, config: controlConfig)
         controlVisibleDuration = TimeInterval(controlConfig.fadeOutAfter) / 1000
-        controlUI?.alpha = 0.0
+        //controlUI?.alpha = 0.0
+        controlUI?.showControls(false)
         skipForwardTime = TimeInterval(controlConfig.skipForwardTime) / 1000
         skipBackwardTime = TimeInterval(controlConfig.skipBackwardTime) / 1000
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.bringControlToForeground(_:)))
@@ -31,7 +32,8 @@ extension AMGPlayKit {
     }
     
     @objc func bringControlToForeground(_ sender: UITapGestureRecognizer) {
-        controlUI?.alpha = 1.0
+        //controlUI?.alpha = 1.0
+        controlUI?.showControls(true)
         startControlVisibilityTimer()
     }
     
@@ -63,7 +65,8 @@ extension AMGPlayKit {
     
     @objc func hideControls(){
         print("Hiding controls")
-        controlUI?.alpha = 0.0
+       //controlUI?.alpha = 0.0
+        controlUI?.showControls(false)
     }
     
     /**

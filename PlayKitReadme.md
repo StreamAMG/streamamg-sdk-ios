@@ -133,7 +133,7 @@ It is also possible to configure these settings by using the AMGControlBuilder c
 ``` Swift
 let controls = AMGControlBuilder()
     .setHideDelay(2500) // sets the delay of inactivity to 2.5 seconds (2500 Milliseconds) before hiding the controls
-    .setTrackTimeShowing(true) // Shows the start and end times, configured depending on the visability of the current time
+    .setTrackTimeShowing(true) // Shows the start and end times
     .build()
 
     playKit.addStandardControl(config: controls)
@@ -146,20 +146,7 @@ Set the delay, in milliseconds, of the inactivity timer before hiding the contro
 .setHideDelay(_ time: Int)
 ```
 
-Set the position of the scrub bar on the player, can be one of .top, .middle or .bottom
-All other AMGControlPosition values will default to using .bottom
-``` Swift
-.setSlideBarPosition(_ position: AMGControlPosition)
-```
-
-Toggle the visibility of the current playhead position (the current play time)
-``` Swift
-.setCurrentTimeShowing(_ isOn: Bool)
-```
-
 Toggle the visibility of the current track time
-If the current play time toggle is on, this will display the start as 00:00 and the end as the duration of the media
-If the current play time toggle is off, this will display the start as the CURRENT time and the end as the time remaining
 ``` Swift
 .setTrackTimeShowing(_ isOn: Bool)
 ```
@@ -204,6 +191,41 @@ Hide the 'fullscreen' button
 Hide the 'fullscreen' button when the player is in full screen
 ``` Swift
 .hideFullScreenButtonOnFullScreen()
+```
+
+Specify the image to use for the play button
+``` Swift
+.playImage(_ image: String) 
+```
+
+Specify the image to use for the pause button
+``` Swift
+.pauseImage(_ image: String)
+```
+
+Specify the image to use for the fullscreen button
+``` Swift
+.fullScreenImage(_ image: String)
+```
+
+Specify the image to use for the skip forwards button
+``` Swift
+.skipForwardImage(_ image: String)
+```
+
+Specify the image to use for the skip backward button
+``` Swift
+.skipBackwardImage(_ image: String)
+```
+
+Specify the image to use for the 'is live'
+``` Swift
+.isLiveImage(_ image: String)
+```
+
+Specify the image to use for the logo / watermark
+``` Swift
+.logoImage(_ image: String)
 ```
 
 ## Media overlays
@@ -457,5 +479,10 @@ This function will be made optional in the near future
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.2 - Updated Controls UI
+- Redesign for standard controls
+- Added Control config for images
+- Removed Slider height configuration and show curent time configuration
 
 ### 0.1 Initial build

@@ -32,7 +32,10 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     var skipBackwardImage: UIImage = UIImage()
     var pauseImage: UIImage = UIImage()
     var fullScreenImage: UIImage = UIImage()
+    var thumb: UIImage = UIImage()
     var scrubBar: UISlider = UISlider()
+    
+    var scrubBarBackground: UIView = UIView()
 
     var mediaLength: TimeInterval = 0
 
@@ -56,6 +59,10 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     private var playheadCounter = 0
 
     private var configModel: AMGPlayKitStandardControlsConfigurationModel = AMGPlayKitStandardControlsConfigurationModel()
+    
+    private var mainView: UIView = UIView(frame: CGRect.zero)
+    private var bottomScrubView: UIView = UIView(frame: CGRect.zero)
+    private var bottomScrubViewTrack: UIView = UIView(frame: CGRect.zero)
 
     init (hostView: UIView, delegate: AMGPlayerDelegate, config: AMGPlayKitStandardControlsConfigurationModel? = nil){
         super.init(frame: CGRect(x: 0, y: 0, width: hostView.frame.width, height: hostView.frame.height))
@@ -85,6 +92,20 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         hideFullScreenButton = configModel.hideFullscreen
         hideFullScreenButtonInFullScreen = configModel.hideFullscreenOnFS
         
+        var trackColour = UIColor.init(red: 0.29, green: 0.761, blue: 0.957, alpha: 1.0)
+        
+        mainView.frame = CGRect(x: 0, y: 0, width: w, height: h)
+        bottomScrubView.frame = CGRect(x: 0, y: h - 2, width: w, height: 2)
+        bottomScrubViewTrack.frame = CGRect(x: 0, y: 0, width: 0, height: 2)
+        
+        bottomScrubView.backgroundColor = .white
+        bottomScrubViewTrack.backgroundColor = trackColour
+        
+        bottomScrubView.addSubview(bottomScrubViewTrack)
+        
+        addSubview(mainView)
+        addSubview(bottomScrubView)
+        
         guard let bundleURL = Bundle.main.url(forResource: "AMGPlayKitBundle", withExtension: "bundle") else {
             print("Can't find bundle")
             return
@@ -103,86 +124,119 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         } else if let myImage = UIImage(named: "standard_ui_pauseButton", in: bundle, compatibleWith: .none){
             pauseImage = myImage
         }
-        if let myImage = UIImage(named: "skipForwardButton", in: bundle, compatibleWith: .none){
+        if let customImage = configModel.skipForwardImage, let myImage = UIImage(named: customImage) {
+            skipForawrdImage = myImage
+        } else if let myImage = UIImage(named: "skipForwardButton", in: bundle, compatibleWith: .none){
             skipForawrdImage = myImage
         }
-        if let myImage = UIImage(named: "skipBackButton", in: bundle, compatibleWith: .none){
+        if let customImage = configModel.skipBackwardImage, let myImage = UIImage(named: customImage) {
+            skipBackwardImage = myImage
+        } else if let myImage = UIImage(named: "skipBackButton", in: bundle, compatibleWith: .none){
             skipBackwardImage = myImage
         }
-        if let myImage = UIImage(named: "fullScreenButton", in: bundle, compatibleWith: .none){
+        if let customImage = configModel.fullScreenImage, let myImage = UIImage(named: customImage) {
             fullScreenImage = myImage
+        } else if let myImage = UIImage(named: "fullScreenButton", in: bundle, compatibleWith: .none){
+            fullScreenImage = myImage
+        }
+        if let myImage = UIImage(named: "slider_thumb", in: bundle, compatibleWith: .none){
+            thumb = myImage
         }
         playPause.frame = CGRect(x: x, y: y, width: playPauseSize, height: playPauseSize)
         playPause.tintColor = UIColor.white
         playPause.contentMode = .scaleToFill
         playPause.setImage(pauseImage, for: .normal)
         playPause.addTarget(self, action: #selector(togglePlayPause), for: .touchUpInside)
-        addSubview(playPause)
+        mainView.addSubview(playPause)
 
         backwardButton.frame = CGRect(x: x - skipSize - 20, y: skipY, width: skipSize, height: skipSize)
         backwardButton.tintColor = UIColor.white
         backwardButton.contentMode = .scaleToFill
         backwardButton.setImage(skipBackwardImage, for: .normal)
         backwardButton.addTarget(self, action: #selector(skipBack), for: .touchUpInside)
-        addSubview(backwardButton)
+        mainView.addSubview(backwardButton)
 
         forwardButton.frame = CGRect(x: x + playPauseSize + 20, y: skipY, width: skipSize, height: skipSize)
         forwardButton.tintColor = UIColor.white
         forwardButton.contentMode = .scaleToFill
         forwardButton.setImage(skipForawrdImage, for: .normal)
         forwardButton.addTarget(self, action: #selector(skipForward), for: .touchUpInside)
-        addSubview(forwardButton)
+        mainView.addSubview(forwardButton)
         // Add scrub bar
 
-        var scrubBarYPosition = h-30
+        let scrubBarBackY = h-45
+        let scrubBarBackX = CGFloat(20)
+        let scrubBarBackW = w-40
+        let scrubBarBackH = CGFloat(40)
+        
+        scrubBarBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
+        
+        scrubBarBackground.layer.cornerRadius = 10
+        scrubBarBackground.backgroundColor = UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
+        mainView.addSubview(scrubBarBackground)
+        
+        
 
-        switch configModel.slideBarPosition {
-        case .top:
-            scrubBarYPosition = 30
-        case .centre:
-        scrubBarYPosition = y + playPauseSize
-        default:
-            if configModel.trackTimeShowing || configModel.currentTimeShowing {
-                scrubBarYPosition -= 20
-            }
-            break
+//        switch configModel.slideBarPosition {
+//        case .top:
+//            scrubBarYPosition = 30
+//        case .centre:
+//        scrubBarYPosition = y + playPauseSize
+//        default:
+//            if configModel.trackTimeShowing || configModel.currentTimeShowing {
+//                scrubBarYPosition -= 20
+//            }
+//            break
+//        }
+        
+        var scrubBarx: CGFloat = 20
+        var scrubBarw: CGFloat = scrubBarBackW-40
+        
+        if configModel.trackTimeShowing {
+            startTime = timeLabel()
+            endTime = timeLabel()
+            let endTimeX = scrubBarBackW - endTime.frame.width
+            endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
+            endTime.textAlignment = .left
+            scrubBarBackground.addSubview(startTime)
+            scrubBarBackground.addSubview(endTime)
+            scrubBarx = startTime.frame.width
+            scrubBarw = scrubBarBackW - startTime.frame.width - endTime.frame.width
+            trackTimeShowing = true
+        } else {
+            trackTimeShowing = false
         }
 
-        scrubBar.frame = CGRect(x: 20, y: scrubBarYPosition, width: w-40, height: 20)
+        scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
         scrubBar.minimumValue = 0
         scrubBar.maximumValue = 100
         scrubBar.addTarget(self, action: #selector(sliderMoved(_:)), for: .allEvents)
         scrubBar.addTarget(self, action: #selector(sliderTouched(_:)), for: .touchDown)
         scrubBar.addTarget(self, action: #selector(sliderReleased(_:)), for: .touchUpInside)
         scrubBar.addTarget(self, action: #selector(sliderReleased(_:)), for: .touchUpOutside)
-        addSubview(scrubBar)
+        scrubBar.setThumbImage(thumb, for: .normal)
+        scrubBar.maximumTrackTintColor = trackColour
+        scrubBarBackground.addSubview(scrubBar)
 
-        if configModel.trackTimeShowing {
-            startTime = timeLabel(position: .left)
-            endTime = timeLabel(position: .right)
-            addSubview(startTime)
-            addSubview(endTime)
-            trackTimeShowing = true
-        } else {
-            trackTimeShowing = false
-        }
 
-        if configModel.currentTimeShowing {
-            currentTime = timeLabel(position: .centre)
-            addSubview(currentTime)
-            currentTimeShowing = true
-        } else {
-            currentTimeShowing = false
-        }
+//        if configModel.currentTimeShowing {
+//            currentTime = timeLabel(position: .centre)
+//            addSubview(currentTime)
+//            currentTimeShowing = true
+//        } else {
+//            currentTimeShowing = false
+//        }
         
         if !hideFullScreenButton {
-        fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: scrubBarYPosition - 20 - skipSize, width: skipSize, height: skipSize)
+        fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
         fullscreenButton.tintColor = UIColor.white
         fullscreenButton.contentMode = .scaleToFill
         fullscreenButton.setImage(fullScreenImage, for: .normal)
         fullscreenButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
-        addSubview(fullscreenButton)
+            mainView.addSubview(fullscreenButton)
         }
+        
+        showControls(false)
 
     }
 
@@ -195,25 +249,18 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     }
 
 
-    private func timeLabel(position: AMGControlPosition) -> UILabel {
-        let x = scrubBar.frame.minX
-        let y = scrubBar.frame.minY + scrubBar.frame.height
-        let label = UILabel(frame: CGRect(x: x, y: y, width: scrubBar.frame.width, height: 15))
+    private func timeLabel() -> UILabel {
+        let x = CGFloat(0)
+        let y = CGFloat(0)
+        let label = UILabel(frame: CGRect(x: x, y: y, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
         label.font = .systemFont(ofSize: 12)
         label.textColor = .white
-        label.text = "00:00"
-
-
-        switch position {
-        case .right:
-            label.textAlignment = .right
-        case .left:
-        label.textAlignment = .left
-        default:
-            label.textAlignment = .center
-
-        }
-
+        label.text = "00:00:000"
+        label.sizeToFit()
+        let labelY: CGFloat = (40 - label.frame.height) / 2
+        label.frame = CGRect(x: x, y: labelY, width: label.frame.width, height: label.frame.height)
+        label.textAlignment = .right
+        label.text = ""
         return label
     }
 
@@ -280,6 +327,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         } else {
             scrubBar.value = Float(position)
         }
+        setTrackSize(position: position)
         if trackTimeShowing {
             if currentTimeShowing {
                 currentTime.text = timeForDisplay(time: position)
@@ -295,11 +343,18 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         }
     }
+    
+    func setTrackSize(position: TimeInterval) {
+        let percentage = position / mediaLength
+        let width = frame.width * CGFloat(percentage)
+        bottomScrubViewTrack.frame = CGRect(x: 0, y: 0, width: width, height: 2)
+    }
 
     func changeMediaLength(length: TimeInterval) {
         mediaLength = length
         scrubBar.maximumValue = Float(length)
         scrubBar.value = 0
+        setTrackSize(position: 0)
     }
 
     func timeForDisplay(time: TimeInterval) -> String {
@@ -340,6 +395,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         let skipY = (h / 2) - (skipSize / 2)
         
         
+        mainView.frame = CGRect(x: 0, y: 0, width: w, height: h)
+        bottomScrubView.frame = CGRect(x: 0, y: h - 2, width: w, height: 2)
+        bottomScrubViewTrack.frame = CGRect(x: 0, y: 0, width: 0, height: 2)
         
         playPause.frame = CGRect(x: x, y: y, width: playPauseSize, height: playPauseSize)
 
@@ -347,45 +405,36 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         forwardButton.frame = CGRect(x: x + playPauseSize + 20, y: skipY, width: skipSize, height: skipSize)
 
-        var scrubBarYPosition = h-30
-
-        switch configModel.slideBarPosition {
-        case .top:
-            scrubBarYPosition = 30
-        case .centre:
-        scrubBarYPosition = y + playPauseSize
-        default:
-            if configModel.trackTimeShowing || configModel.currentTimeShowing {
-                scrubBarYPosition -= 20
-            }
-            break
-        }
-
-        scrubBar.frame = CGRect(x: 20, y: scrubBarYPosition, width: w-40, height: 20)
-
+        
+        
+        let scrubBarBackY = h-45
+        let scrubBarBackX = CGFloat(20)
+        let scrubBarBackW = w-40
+        let scrubBarBackH = CGFloat(40)
+        
+        scrubBarBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
+        
+        
+        var scrubBarx: CGFloat = 20
+        var scrubBarw: CGFloat = scrubBarBackW-40
+        
         if configModel.trackTimeShowing {
-            startTime.removeFromSuperview()
-            endTime.removeFromSuperview()
-            startTime = timeLabel(position: .left)
-            endTime = timeLabel(position: .right)
-            addSubview(startTime)
-            addSubview(endTime)
+            let endTimeX = scrubBarBackW - endTime.frame.width
+            endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
+            scrubBarx = startTime.frame.width + 5
+            scrubBarw = scrubBarBackW - startTime.frame.width - endTime.frame.width - 10
             trackTimeShowing = true
         } else {
             trackTimeShowing = false
         }
 
-        if configModel.currentTimeShowing {
-            currentTime.removeFromSuperview()
-            currentTime = timeLabel(position: .centre)
-            addSubview(currentTime)
-            currentTimeShowing = true
-        } else {
-            currentTimeShowing = false
-        }
-        
-
-        fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: scrubBarYPosition - 20 - skipSize, width: skipSize, height: skipSize)
+        scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
+        fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
+    }
+    
+    func showControls(_ shouldShow: Bool) {
+        mainView.isHidden = !shouldShow
+        bottomScrubView.isHidden = shouldShow
     }
 
 

@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "StreamAMGSDK"
-  spec.version      = "0.1"
+  spec.version      = "0.2"
   spec.summary      = "Stream AMG SDK"
   spec.swift_versions = "5"
 
@@ -18,7 +18,9 @@ Pod::Spec.new do |spec|
 
   spec.platform     = :ios
   spec.ios.deployment_target = '11.0'
-    spec.source_files  = "Source/**/*.swift"
+  spec.tvos.deployment_target = '13.0'
+
+  spec.source_files  = "Source/**/*.swift"
 
   spec.source = { :git => 'https://github.com/StreamAMG/streamamg-sdk-ios.git', :tag => spec.version }
 
@@ -55,6 +57,14 @@ playkit.dependency 'PlayKit_IMA', '1.10.0'
 playkit.dependency 'PlayKitProviders', '1.11.0'
 playkit.dependency 'google-cast-sdk-no-bluetooth', '4.5.3'
 playkit.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.xcassets'}
+end
+
+spec.subspec 'PlayKitTV' do |playkittv|
+playkittv.source_files  = "Source/StreamSDKPlayKit/**/*.*"
+playkittv.dependency 'PlayKit', '3.20.0'
+playkittv.dependency 'PlayKit_IMA', '1.10.0'
+playkittv.dependency 'PlayKitProviders', '1.11.0'
+playkittv.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.xcassets'}
 end
 
 
