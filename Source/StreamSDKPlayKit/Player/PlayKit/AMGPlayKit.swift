@@ -8,7 +8,7 @@
 import UIKit
 import PlayKit
 import PlayKit_IMA
-import GoogleCast
+//import GoogleCast
 import MediaPlayer
 
 
@@ -36,7 +36,7 @@ AMGPlayKit is an SDK that wraps Kaltura PlayKit, AMGAnalytics, IMA, basic castin
  
 The SDK, at it's most basic, is a UIView, instantiated either programatically, or via Storyboard, that acts as a single point of reference for all Kaltura PlayKit functionality
  */
-@objc public class AMGPlayKit: UIView, GCKSessionManagerListener, GCKRemoteMediaClientListener, GCKRequestDelegate, AMGPlayerDelegate {
+@objc public class AMGPlayKit: UIView, AMGPlayerDelegate { // GCKSessionManagerListener, GCKRemoteMediaClientListener, GCKRequestDelegate, 
 
     var playerView: PlayerView? = nil
     public var player: Player!
@@ -66,9 +66,9 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     
     // Casting properties
     
-    internal var mediaInformation: GCKMediaInformation?
-    internal var sessionManager: GCKSessionManager?
-    internal var castButton: GCKUICastButton!
+//    internal var mediaInformation: GCKMediaInformation?
+//    internal var sessionManager: GCKSessionManager?
+//    internal var castButton: GCKUICastButton!
     
     
 /**
@@ -223,6 +223,13 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
         //   return nil // Analytics disabled until the backend is complete
         //return PluginConfig(config: [AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
         return PluginConfig(config: [IMAPlugin.pluginName: getIMAPluginConfig(adTagUrl: ""), AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
+    }
+    
+    public func castingURL() -> URL? {
+        if let mediaToCast = currentMedia {
+            return mediaToCast.castURL
+        }
+        return  nil
     }
 
     private func loadMedia(media: MediaItem){

@@ -39,11 +39,8 @@ public extension PlayableItem {
             return nil
         }
         
-        return URL(string: "https://open.http.mp.streamamg.com/index.php/extwidget/preview/partner_id/\(partnerID)/uiconf_id/\(uiConfID)/entry_id/\(entryID)/embed/iframe?flashvars[streamerType]=auto&ks=\(ks ?? "")")
-//        return URL(string:"\(serverURL)/p/\(partnerID)/sp/\(partnerID)00/playManifest/entryId/\(entryID)/format/applehttp/protocol/http/a.m3u8?ks=\(ks ?? "")")
+        return URL(string: "https://\(serverURL)/index.php/extwidget/preview/partner_id/\(partnerID)/uiconf_id/\(uiConfID)/entry_id/\(entryID)/embed/iframe?flashvars[streamerType]=auto&ks=\(ks ?? "")")
     }
-    
-    //https://open.http.mp.streamamg.com/index.php/extwidget/preview/partner_id/3000557/uiconf_id/30024970/entry_id/0_7q5hg59p/embed/iframe?flashvars[streamerType]=auto
 
     
     var mediaEntry: PKMediaEntry {
