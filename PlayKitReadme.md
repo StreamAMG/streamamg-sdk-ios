@@ -519,7 +519,7 @@ playKit.serveAdvert("VAST_URL_FOR_REQUIRED_ADVERT")
 
 All notable changes to this project will be documented in this section.
 
-### 0.3 - State listeners
+### 0.6 - State listeners
 - Added state listeners for PlayKit
 - Removed Google ChromeCast
 
