@@ -16,7 +16,7 @@ public struct LoginResponse: Codable {
     public var locationFromIp: LocationFromIp?
     public var currentCustomerSessionStatus: Int?
     public var currentCustomerSession: StreamAMGUserModel?
-    public var modelErrors: ModelErrors?
+    //public var modelErrors: ModelErrors?
     
     enum CodingKeys: String, CodingKey {
       case status = "Status",
@@ -26,8 +26,8 @@ public struct LoginResponse: Codable {
            utcNow = "UtcNow",
            locationFromIp = "LocationFromIp",
            currentCustomerSessionStatus = "CurrentCustomerSessionStatus",
-           currentCustomerSession = "CurrentCustomerSession",
-           modelErrors = "ModelErrors"
+           currentCustomerSession = "CurrentCustomerSession"
+          // modelErrors = "ModelErrors"
     }
     
     public func logResponse(){
@@ -81,9 +81,10 @@ public struct StreamAMGUserModel: Codable {
     public var customerNonExpiringSubscriptionCount: Int?
     public var customerEntitlements: String?
     public var customerFullAccessUntil: String?
+    public var customerPackages: String?
     public var customerBillingProfileProvider: String?
     public var customerBillingProfileReference: String?
-    public var customerBillingProfileExpiresAt: String?
+    public var customerBillingProfileExpiresAt: Int64?
     public var customerBillingProfileCreatedAt: String?
     public var customerBillingProfileLastFailedAt: String?
     public var requiresCardAuthenticationCount: Int?
@@ -99,6 +100,7 @@ public struct StreamAMGUserModel: Codable {
            customerNonExpiringSubscriptionCount = "CustomerNonExpiringSubscriptionCount",
            customerEntitlements = "CustomerEntitlements",
            customerFullAccessUntil = "CustomerFullAccessUntil",
+           customerPackages = "CustomerPackages",
            customerBillingProfileProvider = "CustomerBillingProfileProvider",
            customerBillingProfileReference = "CustomerBillingProfileReference",
            customerBillingProfileExpiresAt = "Expiry",

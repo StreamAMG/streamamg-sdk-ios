@@ -457,6 +457,50 @@ playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, 
 
 If the media does not require a KSession token, this should be left as null
 
+### State Listener
+
+To react to player events within your app, you can implement the AMGPlayKitListener delegate.
+
+``` Swift
+        playKit.setPlayKitListener(listener: self)
+
+func playEventOccurred(state: AMGPlayKitState) {
+    print("playEventOccurred - \(state.state)")
+}
+
+func stopEventOccurred(state: AMGPlayKitState) {
+    print("stopEventOccurred - \(state.state)")
+}
+
+func loadChangeStateOccurred(state: AMGPlayKitState) {
+    print("loadChangeStateOccurred - \(state.state)")
+}
+
+func durationChangeOccurred(state: AMGPlayKitState) {
+    print("durationChangeOccurred - \(state.state) - \(state.duration)")
+}
+
+func errorOccurred(error: AMGPlayKitError) {
+    print("errorOccurred - \(error.errorCode) - \(error.errorMessage)")
+}
+```
+
+You must conform to using the above functions when creating your listener.
+
+The following errors will be reported when you implement errorOccurred:
+
+SOURCE_ERROR(7000) - The error occured loading data from MediaSource.
+RENDERER_ERROR(7001) - The error occured in a renderer.
+UNEXPECTED(7002) - If in runtime any unexpected error occurs.
+SOURCE_SELECTION_FAILED(7003) - The error occured to get the source from SourceSelector.
+FAILED_TO_INITIALIZE_PLAYER(7004) - The error occured when failed to initilize PlayerEngine.
+DRM_ERROR(7005) - In case device does not support widevine modular or license is expired.
+TRACK_SELECTION_FAILED(7006) - The error occured if track selection is not possible in TrackSelectionHelper.
+LOAD_ERROR(7007) - In case, media is not loaded in any of the MediaSource.
+OUT_OF_MEMORY(7008)
+REMOTE_COMPONENT_ERROR(7009)
+TIMEOUT(7010)
+
 ### Serving Adverts
 
 AMG PlayKit supports VAST URL adverts.
@@ -471,14 +515,13 @@ for example:
 playKit.serveAdvert("VAST_URL_FOR_REQUIRED_ADVERT")
 ```
 
-### Basic casting
-AMG PlayKit currently supports Apple AirPlay and Google ChromeCast 'out of the box'. If these services are available, an icon will appear in the top left of the player.
-
-This function will be made optional in the near future
-
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.3 - State listeners
+- Added state listeners for PlayKit
+- Removed Google ChromeCast
 
 ### 0.2 - Updated Controls UI
 - Redesign for standard controls

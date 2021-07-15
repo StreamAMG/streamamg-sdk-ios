@@ -32,12 +32,12 @@ public protocol AMGPlayerDelegate {
 }
 
 /**
-AMGPlayKit is an SDK that wraps Kaltura PlayKit, AMGAnalytics, IMA, basic casting and other useful functions into a simple to use view.
+ AMGPlayKit is an SDK that wraps Kaltura PlayKit, AMGAnalytics, IMA, basic casting and other useful functions into a simple to use view.
  
-The SDK, at it's most basic, is a UIView, instantiated either programatically, or via Storyboard, that acts as a single point of reference for all Kaltura PlayKit functionality
+ The SDK, at it's most basic, is a UIView, instantiated either programatically, or via Storyboard, that acts as a single point of reference for all Kaltura PlayKit functionality
  */
 @objc public class AMGPlayKit: UIView, AMGPlayerDelegate { // GCKSessionManagerListener, GCKRemoteMediaClientListener, GCKRequestDelegate, 
-
+    
     var playerView: PlayerView? = nil
     public var player: Player!
     var partnerID: Int = 0
@@ -64,68 +64,72 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     var isLiveImageView = UIImageView()
     var logoImageView = UIImageView()
     
+    var listener: AMGPlayKitListener? = nil
+    
+    private var playerState: PlayerState? = nil
+    
     // Casting properties
     
-//    internal var mediaInformation: GCKMediaInformation?
-//    internal var sessionManager: GCKSessionManager?
-//    internal var castButton: GCKUICastButton!
+    //    internal var mediaInformation: GCKMediaInformation?
+    //    internal var sessionManager: GCKSessionManager?
+    //    internal var castButton: GCKUICastButton!
     
     
-/**
+    /**
      Standard initialisation
      
      - Parameter frame: A CGRect describing the desired frame for the UIView. The Kaltura PlayKit will fill this view
      - Returns: A UIView containing an instantiated instance of the Kaltura PlayKit
-*/
+     */
     public override init(frame: CGRect){
         super.init(frame: frame)
         createPlayer()
-
+        
     }
     
     /**
-         Standard initialisation with Partner ID - The preferred programmatic initialisation
-         
-         - Parameter frame: A CGRect describing the desired frame for the UIView. The Kaltura PlayKit will fill this view
-         - Parameter partnerID: An integer value representing the Partner ID to be used in any played media
-         - Returns: A UIView containing an instantiated instance of the Kaltura PlayKit
+     Standard initialisation with Partner ID - The preferred programmatic initialisation
      
-         Partner ID can also be sent separately or as part of media data when loading media
-    */
+     - Parameter frame: A CGRect describing the desired frame for the UIView. The Kaltura PlayKit will fill this view
+     - Parameter partnerID: An integer value representing the Partner ID to be used in any played media
+     - Returns: A UIView containing an instantiated instance of the Kaltura PlayKit
+     
+     Partner ID can also be sent separately or as part of media data when loading media
+     */
     public init(frame: CGRect, partnerID: Int){
         super.init(frame: frame)
         self.partnerID = partnerID
         createPlayer()
     }
-
+    
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-     //   createPlayer()
+        //   createPlayer()
     }
     
     /**
-        Adds the Partner ID to the instance of AMGPlayKit.
+     Adds the Partner ID to the instance of AMGPlayKit.
      
-        Should be used if instantiating the view via Storyboard, or if the view was instantiated manually without the Partner ID
+     Should be used if instantiating the view via Storyboard, or if the view was instantiated manually without the Partner ID
      
-        - Parameter partnerID: An integer value representing the Partner ID to be used in any played media
+     - Parameter partnerID: An integer value representing the Partner ID to be used in any played media
      */
     public func addPartnerID(partnerId: Int){
         partnerID = partnerId
     }
     
     /**
-        Changes the URL of the analytics endpoint
+     Changes the URL of the analytics endpoint
      
-        Should only be used if targetting a secondary or non-standard analytics server
+     Should only be used if targetting a secondary or non-standard analytics server
      
-        - Parameter url: The URL of the server to target
+     - Parameter url: The URL of the server to target
      */
     public func setAnalyticsURL(_ url: String) {
         AMGAnalyticsPlugin.setAnalyticsURL(url)
     }
     
-   
+    
     public func createPlayer(){
         setNeedsLayout()
         layoutIfNeeded()
@@ -135,11 +139,14 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
         addSubview(playerView!)
         constructPlayKit()
         setUpOverlays()
- //       setUpCasting()
+        //       setUpCasting()
     }
     
     
-  
+    public func setPlayKitListener(listener: AMGPlayKitListener) {
+        self.listener = listener
+    }
+    
     func constructPlayKit() {
         PlayKitManager.shared.registerPlugin(IMAPlugin.self)
         PlayKitManager.shared.registerPlugin(AMGAnalyticsPlugin.self)
@@ -158,30 +165,82 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
         }
         self.player?.view = playerView
         self.player?.addObserver(self, events: [PlayerEvent.error]) { event in
-            print("Error in AMGPlayKit \(event.data)")
+            var knownError = false
+            if let data = event.data, let error = data["error"] as? String {
+                for possibleError in 7000...7010 {
+                    if error.contains("\(possibleError)") {
+                        knownError = true
+                        if let myError = AMGPlayerError(rawValue: possibleError) {
+                            self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: possibleError, errorMessage: myError.errorDescription()))
+                        }
+                    }
+                }
+            }
+            if !knownError {
+                self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: -1, errorMessage: "UNKNOWN_ERROR"))
+            }
         }
+        
         self.player?.addObserver(self, events: [PlayerEvent.errorLog]) { event in
-            print("ErrorLog in AMGPlayKit \(event.data)")
+            var knownError = false
+            if let data = event.data, let error = data["error"] as? String {
+                for possibleError in 7000...7010 {
+                    if error.contains("\(possibleError)") {
+                        knownError = true
+                        if let myError = AMGPlayerError(rawValue: possibleError) {
+                            self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: possibleError, errorMessage: myError.errorDescription()))
+                        }
+                    }
+                }
+            }
+            if !knownError {
+                self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: -1, errorMessage: "UNKNOWN_ERROR"))
+            }
+        }
+        self.player?.addObserver(self, events: [PlayerEvent.stateChanged]) { event in
+            
+            self.playerState = event.newState
+                          var newState: AMGPlayerState? = nil
+            switch self.playerState{
+            case .idle:
+                newState = .Idle
+            case .ready:
+                newState = .Ready
+            case .buffering:
+                newState = .Buffering
+            default:
+                break
+                          }
+            
+            if let newState = newState {
+                self.listener?.loadChangeStateOccurred(state: AMGPlayKitState(state: newState))
+            }
+            
         }
         self.player?.addObserver(self, events: [PlayerEvent.play]) { event in
             self.playEventOccurred()
+            self.listener?.playEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Play))
         }
         self.player?.addObserver(self, events: [PlayerEvent.playing]) { event in
             self.playEventOccurred()
+            self.listener?.playEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Playing))
         }
         self.player?.addObserver(self, events: [PlayerEvent.pause]) { event in
             self.stopEventOccurred()
+            self.listener?.stopEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Pause))
         }
         self.player?.addObserver(self, events: [PlayerEvent.ended]) { event in
             self.stopEventOccurred()
+            self.listener?.stopEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Ended))
         }
         self.player?.addObserver(self, events: [PlayerEvent.durationChanged]) { event in
             self.changeDuration(length: TimeInterval(event.duration?.doubleValue ?? 0))
+            self.listener?.durationChangeOccurred(state: AMGPlayKitState(state: AMGPlayerState.Loaded, duration: TimeInterval(event.duration?.doubleValue ?? 0)))
         }
         playHeadObserver = self.player?.addPeriodicObserver(interval: 0.1, observeOn: DispatchQueue.main, using: { [weak self] (pos) in
             self?.control?.changePlayHead(position: pos)
         })
-
+        
     }
     
     func changeDuration(length: TimeInterval) {
@@ -191,11 +250,11 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     func changePlayHead() {
         if let playHead = self.player?.currentTime{
             control?.changePlayHead(position: playHead)
-    }
+        }
     }
     
     func changeBitrate(){
-       // player?.settings.network.preferredPeakBitRate = 
+        // player?.settings.network.preferredPeakBitRate =
     }
     
     func playEventOccurred() {
@@ -207,18 +266,18 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     }
     
     /**
-        Adds a Fairplay license provider, if required
+     Adds a Fairplay license provider, if required
      
-        - Parameter licenseProvider: An instance of 'FairPlayLicenceProvider'
+     - Parameter licenseProvider: An instance of 'FairPlayLicenceProvider'
      */
     public func setFairPlayLicenseProvider(licenseProvider: FairPlayLicenseProvider) {
         self.player?.settings.fairPlayLicenseProvider = licenseProvider
     }
-
+    
     func createAnalyticsPlugin() -> AMGAnalyticsPluginConfig {
         return AMGAnalyticsPluginConfig(partnerId: partnerID)
     }
-
+    
     func createPluginConfig() -> PluginConfig? {
         //   return nil // Analytics disabled until the backend is complete
         //return PluginConfig(config: [AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
@@ -231,7 +290,13 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
         }
         return  nil
     }
-
+    
+    private func loadCurrentMedia() {
+        if let media = currentMedia {
+            loadMedia(media: media)
+        }
+    }
+    
     private func loadMedia(media: MediaItem){
         currentMedia = media
         if partnerID > 0{
@@ -242,12 +307,12 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     }
     
     /**
-        Queues and runs the specified media item if available
+     Queues and runs the specified media item if available
      
-        - Parameters:
-            - serverUrl: The URL the media is hosted on
-            - entryID: The unique ID for the media item, as specified by StreamAMG
-            - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
+     - Parameters:
+     - serverUrl: The URL the media is hosted on
+     - entryID: The unique ID for the media item, as specified by StreamAMG
+     - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
     public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: MediaType = .vod, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
         if partnerID > 0{
@@ -258,32 +323,32 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     }
     
     /**
-        Queues and runs the specified media item if available, specifying a new partner ID
+     Queues and runs the specified media item if available, specifying a new partner ID
      
-        - Parameters:
-            - serverUrl: The URL the media is hosted on
-            - partnerID: The Partner ID to be used when loading the media item, as specified by StreamAMG
-            - entryID: The unique ID for the media item, as specified by StreamAMG
-            - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
+     - Parameters:
+     - serverUrl: The URL the media is hosted on
+     - partnerID: The Partner ID to be used when loading the media item, as specified by StreamAMG
+     - entryID: The unique ID for the media item, as specified by StreamAMG
+     - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
     public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: MediaType = .vod, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
         self.partnerID = partnerID
         loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate))
     }
-
+    
     // IMA
     
     /**
-        Attaches an advert to all media played
+     Attaches an advert to all media played
      
-        Once fired, the advert can be cancelled by sending an empty string to this function
+     Once fired, the advert can be cancelled by sending an empty string to this function
      
-        - Parameter adTagUrl: The VAST URL of the advert to be consumed
+     - Parameter adTagUrl: The VAST URL of the advert to be consumed
      */
     public func serveAdvert(adTagUrl: String){
         self.player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: getIMAPluginConfig(adTagUrl: adTagUrl))
     }
-
+    
     private func getIMAPluginConfig(adTagUrl: String) -> IMAConfig {
         let adsConfig = IMAConfig()
         adsConfig.set(adTagUrl: adTagUrl)
@@ -293,20 +358,24 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     // Player Delegate
     
     /**
-        Manually play the queued media track
+     Manually play the queued media track
      */
     public func play() {
+        
+        if playerState == .idle {
+            loadCurrentMedia()
+        }
         if let player = player {
             if (player.currentState == .ended) {
                 player.currentTime = 0
             }
-        player.play()
-        startControlVisibilityTimer()
+            player.play()
+            startControlVisibilityTimer()
         }
     }
     
     /**
-        Manually pause the queued media track
+     Manually pause the queued media track
      */
     public func pause() {
         player?.pause()
@@ -314,7 +383,7 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     }
     
     /**
-        Manually set the playhead for the queued media track
+     Manually set the playhead for the queued media track
      */
     public func scrub(position: TimeInterval) {
         player?.currentTime = position  //seek(to: position)
@@ -328,10 +397,10 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
             } else {
                 player.currentTime = time
             }
-        startControlVisibilityTimer()
+            startControlVisibilityTimer()
         }
     }
-
+    
     public func skipBackward() {
         if let player = player {
             let time = player.currentTime - skipBackwardTime
@@ -340,33 +409,33 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
             } else {
                 player.currentTime = time
             }
-        startControlVisibilityTimer()
+            startControlVisibilityTimer()
         }
     }
     
     /**
-        Set the control delegate for the current UI Control class
+     Set the control delegate for the current UI Control class
      */
     public func setControlDelegate(_ delegate: AMGControlDelegate) {
         control = delegate
     }
     
     /**
-    Set the time skipped for forward skip as a time duration
+     Set the time skipped for forward skip as a time duration
      */
     public func skipForwardDuration(_ duration: TimeInterval) {
         skipForwardTime = duration
     }
     
     /**
-    Set the time skipped for backward skip
+     Set the time skipped for backward skip
      */
     public func skipBackwardDuration(_ duration: TimeInterval) {
         skipBackwardTime = duration
     }
     
     /**
-    Set the time skipped for backward and forward skip
+     Set the time skipped for backward and forward skip
      */
     public func skipDuration(_ duration: TimeInterval) {
         skipBackwardTime = duration
@@ -374,21 +443,21 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
     }
     
     /**
-    Set the time skipped for forward skip
+     Set the time skipped for forward skip
      */
     public func skipForwardTime(_ duration: Int) {
         skipForwardTime = TimeInterval(duration / 1000)
     }
     
     /**
-    Set the time skipped for backward skip
+     Set the time skipped for backward skip
      */
     public func skipBackwardTime(_ duration: Int) {
         skipBackwardTime = TimeInterval(duration / 1000)
     }
     
     /**
-    Set the time skipped for backward and forward skip
+     Set the time skipped for backward and forward skip
      */
     public func skipTime(_ duration: Int) {
         skipBackwardTime = TimeInterval(duration / 1000)
@@ -415,7 +484,7 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
         orientationTime = Date().timeIntervalSince1970
         var value  = UIInterfaceOrientation.landscapeRight.rawValue
         if UIApplication.shared.statusBarOrientation == .landscapeLeft {
-           value = UIInterfaceOrientation.landscapeLeft.rawValue
+            value = UIInterfaceOrientation.landscapeLeft.rawValue
         }
         UIDevice.current.setValue(value, forKey: "orientation")
         UIViewController.attemptRotationToDeviceOrientation()
@@ -423,6 +492,6 @@ The SDK, at it's most basic, is a UIView, instantiated either programatically, o
         playerView?.layoutIfNeeded()
         controlUI?.setFullScreen(true)
     }
-
+    
     
 }

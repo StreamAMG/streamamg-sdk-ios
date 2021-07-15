@@ -82,6 +82,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 0.3 - PlayKit State listener changes
+
 ### 0.2 - PlayKit UI updates
 
 ### 0.1 - Initial build

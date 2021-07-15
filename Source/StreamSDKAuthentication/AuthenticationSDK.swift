@@ -71,6 +71,8 @@ public class AuthenticationSDK {
     public func loginSilent(completion: ((Result<StreamAMGUserModel, StreamAMGError>) -> Void)?){
         if let loginDetails = securelyRetrieveEmailAndPass() {
             login(email: loginDetails.email, password: loginDetails.password, completion: completion)
+        } else {
+            completion?(.failure(StreamAMGError(message: "No stored user found")))
         }
     }
     
