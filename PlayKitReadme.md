@@ -195,7 +195,7 @@ Hide the 'fullscreen' button when the player is in full screen
 
 Specify the image to use for the play button
 ``` Swift
-.playImage(_ image: String) 
+.playImage(_ image: String)
 ```
 
 Specify the image to use for the pause button
@@ -501,6 +501,52 @@ OUT_OF_MEMORY(7008)
 REMOTE_COMPONENT_ERROR(7009)
 TIMEOUT(7010)
 
+### Picture In Picture
+
+PlayKit is able to provide PiP playback on devices that support it.
+
+To enable PiP for your PlayKit implementation, simple call the following function:
+
+``` Swift
+playKit.enablePictureInPicture(delegate: (AMGPictureInPictureDelegate?))
+```
+
+If you pass a 'nil' delegate (or no delegate at all), PlayKit will manage PiP when a video is playing and the app is pushed into background.
+
+If you want more control over PiP, you can also toggle PiP (within the app, for example), by callint the following function:
+
+``` Swift
+playKit.togglePictureInPicture()
+```
+
+You can also pass a delegate that conforms to AMGPictureInPictureDelegate with the enable call, to get callbacks when PiP is available, starts and ends:
+
+``` Swift
+public protocol AMGPictureInPictureDelegate {
+    func pictureInPictureStatus(isPossible: Bool)
+    func pictureInPictureWillStart()
+    func pictureInPictureDidStop()
+}
+```
+
+You can also implement PiP in app, by accessing the required AVPlayerLayer:
+
+``` Swift
+playKit.playerLayer()
+```
+
+#### Warning
+Currently PiP will pause a video when the app goes into background, I will resolve this, but for now, PiP should work fine.
+
+### Casting URL
+
+To access the casting URL of the currently playing media use the following function:
+
+``` Swift
+playKit.castingURL()
+```
+Which returns either a valid URL object (not a String), or a nil
+
 ### Serving Adverts
 
 AMG PlayKit supports VAST URL adverts.
@@ -518,6 +564,11 @@ playKit.serveAdvert("VAST_URL_FOR_REQUIRED_ADVERT")
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.7 - Picture in Picture
+- Added 'enablePictureInPicture' function
+- Added protocol for picture in picture if required
+- Expose Casting URL
 
 ### 0.6 - State listeners
 - Added state listeners for PlayKit

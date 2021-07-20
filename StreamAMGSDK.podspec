@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "StreamAMGSDK"
-  spec.version      = "0.6"
+  spec.version      = "0.7"
   spec.summary      = "Stream AMG SDK"
   spec.swift_versions = "5"
 

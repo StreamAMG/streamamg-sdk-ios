@@ -10,6 +10,7 @@ import PlayKit
 import PlayKit_IMA
 //import GoogleCast
 import MediaPlayer
+import AVKit
 
 
 
@@ -17,19 +18,6 @@ import MediaPlayer
  This protocol handles calls from UI controls , including play state and playhead position
  */
 
-public protocol AMGPlayerDelegate {
-    func play()
-    func pause()
-    func scrub(position: TimeInterval)
-    func skipForward()
-    func skipBackward()
-    func setControlDelegate(_ delegate: AMGControlDelegate)
-    func cancelTimer()
-    func startControlVisibilityTimer()
-    
-    func minimise()
-    func fullScreen()
-}
 
 /**
  AMGPlayKit is an SDK that wraps Kaltura PlayKit, AMGAnalytics, IMA, basic casting and other useful functions into a simple to use view.
@@ -67,6 +55,14 @@ public protocol AMGPlayerDelegate {
     var listener: AMGPlayKitListener? = nil
     
     private var playerState: PlayerState? = nil
+    
+    internal var pipDelegate: AMGPictureInPictureDelegate?
+    
+    internal var pictureInPictureController: AVPictureInPictureController?
+    internal var pipPossibleObservation: NSKeyValueObservation?
+    
+    internal var pipPlayer: AVPlayer?
+    internal var TempPlayer: Player?
     
     // Casting properties
     
@@ -493,5 +489,7 @@ public protocol AMGPlayerDelegate {
         controlUI?.setFullScreen(true)
     }
     
-    
+    public func playerLayer() -> AVPlayerLayer? {
+           return playerView?.layer as? AVPlayerLayer
+        }
 }

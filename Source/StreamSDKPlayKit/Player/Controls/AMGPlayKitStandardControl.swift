@@ -11,12 +11,6 @@ import UIKit
  This protocol handles call backs to the controls themselves, including play state and playhead position
  */
 
-public protocol AMGControlDelegate {
-    func play()
-    func pause()
-    func changePlayHead(position: TimeInterval)
-    func changeMediaLength(length: TimeInterval)
-}
 
 class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
