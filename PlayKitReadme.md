@@ -54,6 +54,17 @@ amgPlaykit?.createPlayer()
 
 (Optional) Add the partnerID - see 'Manually updating the PartnerID'
 
+### Removing the player
+
+When your ViewController is destroyed, you should remove the player to stop all callbacks and listeners cleanly.
+
+``` Swift
+override func viewDidDisappear(_ animated: Bool) {
+    super .viewDidDisappear(animated)
+    amgPlayKit?.removePlayer()
+}
+```
+
 ### Manually updating the PartnerID
 
 PartnerID can be added or changed programatically with the function
@@ -439,23 +450,33 @@ Please note it is no longer required to pass the UIConfig parameter to PlayKit.
 If you have provided the Partner ID to the PlayKit already, you do not need to pass this with each media request:
 
 ``` Swift
-public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil)
+public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD)
 ```
 for example:
 ``` Swift
-playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG")
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", mediaType: .Live)
 ```
 
 Or with a Partner ID
 ``` Swift
-public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil)
+public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD)
 ```
 for example:
 ``` Swift
-playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG")
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", mediaType: .Live)
 ```
 
 If the media does not require a KSession token, this should be left as null
+
+The mediaType defaults to VOD and affects the UI Controls, as well as the player in general.
+
+'AMGMediaType' is defined as:
+
+``` Swift
+public enum AMGMediaType {
+    case Live, VOD, Audio, Live_Audio
+}
+```
 
 ### State Listener
 
@@ -505,21 +526,19 @@ TIMEOUT(7010)
 
 PlayKit is able to provide PiP playback on devices that support it.
 
-To enable PiP for your PlayKit implementation, simple call the following function:
+PiP is automatically enabled for your PlayKit implementation, to disable it, call the following function:
 
 ``` Swift
-playKit.enablePictureInPicture(delegate: (AMGPictureInPictureDelegate?))
+playKit.disablePictureInPicture()
 ```
 
-If you pass a 'nil' delegate (or no delegate at all), PlayKit will manage PiP when a video is playing and the app is pushed into background.
-
-If you want more control over PiP, you can also toggle PiP (within the app, for example), by callint the following function:
+If you want more control over PiP, you can also toggle PiP (within the app, for example), by calling the following function:
 
 ``` Swift
 playKit.togglePictureInPicture()
 ```
 
-You can also pass a delegate that conforms to AMGPictureInPictureDelegate with the enable call, to get callbacks when PiP is available, starts and ends:
+You can also pass a delegate that conforms to AMGPictureInPictureDelegate to get callbacks when PiP is available, starts and ends:
 
 ``` Swift
 public protocol AMGPictureInPictureDelegate {
@@ -527,6 +546,12 @@ public protocol AMGPictureInPictureDelegate {
     func pictureInPictureWillStart()
     func pictureInPictureDidStop()
 }
+```
+
+To set this delegate:
+
+``` Swift
+playKit.setPictureInPictureDelegate(self) //where 'self' conforms to 'AMGPictureInPictureDelegate'
 ```
 
 You can also implement PiP in app, by accessing the required AVPlayerLayer:
@@ -561,9 +586,28 @@ for example:
 playKit.serveAdvert("VAST_URL_FOR_REQUIRED_ADVERT")
 ```
 
+### Spoiler Free
+
+PlayKit has the ability to hide the scrub bar and timing lables, effectively making the video 'spoiler free'
+
+To enable (or disable) spoiler free mode:
+
+``` Swift
+amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false = scrub bar on
+```
+
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.8 - Bug fixes and improvements
+- Fixed a potential crash when exiting player
+- Updated PIP to automatically run unless specifically disabled
+- Improved orientation changes
+- Added 'removePlayer() function to safely remove all listeners
+- Fixed castingURL function
+- Added Spoiler Free mode
+- Updated load media to accept AMGMediaType
 
 ### 0.7 - Picture in Picture
 - Added 'enablePictureInPicture' function

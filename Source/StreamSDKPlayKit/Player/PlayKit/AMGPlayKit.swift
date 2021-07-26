@@ -31,6 +31,7 @@ import AVKit
     var partnerID: Int = 0
     
     internal var currentMedia: MediaItem? = nil
+    internal var currentMediaType: AMGMediaType = .VOD
     
     internal var control: AMGControlDelegate? = nil
     internal var controlUI: AMGPlayKitStandardControl? = nil
@@ -39,7 +40,6 @@ import AVKit
     
     internal var skipForwardTime: TimeInterval = 5
     internal var skipBackwardTime: TimeInterval = 5
-    
     
     internal var controlVisibleTimer: Timer? = nil
     
@@ -60,9 +60,6 @@ import AVKit
     
     internal var pictureInPictureController: AVPictureInPictureController?
     internal var pipPossibleObservation: NSKeyValueObservation?
-    
-    internal var pipPlayer: AVPlayer?
-    internal var TempPlayer: Player?
     
     // Casting properties
     
@@ -125,19 +122,27 @@ import AVKit
         AMGAnalyticsPlugin.setAnalyticsURL(url)
     }
     
-    
     public func createPlayer(){
         setNeedsLayout()
         layoutIfNeeded()
-        let frame = CGRect(x: 0,y: 0,width: self.frame.size.width, height: self.frame.size.height)
-        playerView = PlayerView(frame: frame)
-        playerView?.contentMode = .scaleAspectFill
-        addSubview(playerView!)
         constructPlayKit()
         setUpOverlays()
-        //       setUpCasting()
+        enablePictureInPicture()
     }
     
+    public func removePlayer() {
+        player.stop()
+        player.removeObserver(self, events: [AdEvent.adStarted, PlayerEvent.error, PlayerEvent.errorLog, PlayerEvent.stateChanged, PlayerEvent.play, PlayerEvent.playing, PlayerEvent.pause, PlayerEvent.ended, PlayerEvent.durationChanged])
+        if let observer = playHeadObserver {
+            player.removePeriodicObserver(observer)
+        }
+        cancelTimer()
+        controlVisibleTimer = nil
+        disablePictureInPicture()
+        player = nil
+        playerView = nil
+        self.listener = nil
+    }
     
     public func setPlayKitListener(listener: AMGPlayKitListener) {
         self.listener = listener
@@ -146,6 +151,7 @@ import AVKit
     func constructPlayKit() {
         PlayKitManager.shared.registerPlugin(IMAPlugin.self)
         PlayKitManager.shared.registerPlugin(AMGAnalyticsPlugin.self)
+        
         player = PlayKitManager.shared.loadPlayer(pluginConfig: createPluginConfig())
         player?.addObserver(self, events: [AdEvent.adStarted]) { event in
             if let info = event.adInfo {
@@ -159,7 +165,6 @@ import AVKit
                 print("Ad event: \(event.description)")
             }
         }
-        self.player?.view = playerView
         self.player?.addObserver(self, events: [PlayerEvent.error]) { event in
             var knownError = false
             if let data = event.data, let error = data["error"] as? String {
@@ -196,7 +201,7 @@ import AVKit
         self.player?.addObserver(self, events: [PlayerEvent.stateChanged]) { event in
             
             self.playerState = event.newState
-                          var newState: AMGPlayerState? = nil
+            var newState: AMGPlayerState? = nil
             switch self.playerState{
             case .idle:
                 newState = .Idle
@@ -206,7 +211,7 @@ import AVKit
                 newState = .Buffering
             default:
                 break
-                          }
+            }
             
             if let newState = newState {
                 self.listener?.loadChangeStateOccurred(state: AMGPlayKitState(state: newState))
@@ -236,6 +241,10 @@ import AVKit
         playHeadObserver = self.player?.addPeriodicObserver(interval: 0.1, observeOn: DispatchQueue.main, using: { [weak self] (pos) in
             self?.control?.changePlayHead(position: pos)
         })
+        playerView = PlayerView.createPlayerView(forPlayer: player)  //PlayerView(frame: frame)
+        playerView?.frame = self.bounds
+        playerView?.contentMode = .scaleAspectFill
+        addSubview(playerView!)
         
     }
     
@@ -275,26 +284,20 @@ import AVKit
     }
     
     func createPluginConfig() -> PluginConfig? {
-        //   return nil // Analytics disabled until the backend is complete
+        return nil // Analytics disabled until the backend is complete
         //return PluginConfig(config: [AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
-        return PluginConfig(config: [IMAPlugin.pluginName: getIMAPluginConfig(adTagUrl: ""), AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
-    }
-    
-    public func castingURL() -> URL? {
-        if let mediaToCast = currentMedia {
-            return mediaToCast.castURL
-        }
-        return  nil
+        // return PluginConfig(config: [IMAPlugin.pluginName: getIMAPluginConfig(adTagUrl: ""), AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
     }
     
     private func loadCurrentMedia() {
         if let media = currentMedia {
-            loadMedia(media: media)
+            loadMedia(media: media, mediaType: currentMediaType)
         }
     }
     
-    private func loadMedia(media: MediaItem){
+    private func loadMedia(media: MediaItem, mediaType: AMGMediaType){
         currentMedia = media
+        currentMediaType = mediaType
         if partnerID > 0{
             player?.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: createPluginConfig() as Any)
             player?.prepare(media.media())
@@ -310,9 +313,18 @@ import AVKit
      - entryID: The unique ID for the media item, as specified by StreamAMG
      - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
-    public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: MediaType = .vod, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+    public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+        var kalturaMediaType: MediaType = .vod
+        switch mediaType {
+        case .Live, .Live_Audio:
+            kalturaMediaType = .dvrLive
+            controlUI?.setIsLive()
+        default:
+            kalturaMediaType = .vod
+            controlUI?.setIsVOD()
+        }
         if partnerID > 0{
-            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate))
+            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType)
         } else {
             print("Please provide a PartnerID with the request, add a default with 'addPartnerID(partnerID:Int)' or set a default in the initialiser")
         }
@@ -327,9 +339,9 @@ import AVKit
      - entryID: The unique ID for the media item, as specified by StreamAMG
      - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
-    public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: MediaType = .vod, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+    public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
         self.partnerID = partnerID
-        loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate))
+        loadMedia(serverUrl: serverUrl, entryID: entryID, ks: ks, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate)
     }
     
     // IMA
@@ -341,6 +353,22 @@ import AVKit
      
      - Parameter adTagUrl: The VAST URL of the advert to be consumed
      */
+    
+    
+    public func toggleLive(){
+        if currentMediaType == .Live {
+            currentMediaType = .VOD
+            controlUI?.setIsVOD()
+        } else {
+            currentMediaType = .Live
+            controlUI?.setIsLive()
+        }
+    }
+    
+    public func setSpoilerFree(enabled: Bool) {
+        controlUI?.setSpoilerFree(enabled)
+    }
+    
     public func serveAdvert(adTagUrl: String){
         self.player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: getIMAPluginConfig(adTagUrl: adTagUrl))
     }
@@ -460,36 +488,9 @@ import AVKit
         skipForwardTime = TimeInterval(duration / 1000)
     }
     
-    public func minimise() {
-        if orientationTime > Date().timeIntervalSince1970 - 1.0 {
-            return
-        }
-        orientationTime = Date().timeIntervalSince1970
-        let value  = UIInterfaceOrientation.portrait.rawValue
-        UIDevice.current.setValue(value, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
-        resizeScreen()
-        playerView?.layoutIfNeeded()
-        controlUI?.setFullScreen(false)
-    }
-    
-    public func fullScreen() {
-        if orientationTime > Date().timeIntervalSince1970 - 1.0 {
-            return
-        }
-        orientationTime = Date().timeIntervalSince1970
-        var value  = UIInterfaceOrientation.landscapeRight.rawValue
-        if UIApplication.shared.statusBarOrientation == .landscapeLeft {
-            value = UIInterfaceOrientation.landscapeLeft.rawValue
-        }
-        UIDevice.current.setValue(value, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
-        resizeScreen()
-        playerView?.layoutIfNeeded()
-        controlUI?.setFullScreen(true)
-    }
+
     
     public func playerLayer() -> AVPlayerLayer? {
-           return playerView?.layer as? AVPlayerLayer
-        }
+        return playerView?.layer as? AVPlayerLayer
+    }
 }

@@ -11,24 +11,14 @@ import PlayKit
 
 extension AMGPlayKit: AVPictureInPictureControllerDelegate {
     
-    public func enablePictureInPicture(delegate: AMGPictureInPictureDelegate? = nil) {
-        pipDelegate = delegate
+    internal func enablePictureInPicture() {
         if AVPictureInPictureController.isPictureInPictureSupported() {
-            do {
-            try AVAudioSession.sharedInstance().setActive(true)
-            } catch {
-                print("Error starting PIP - \(error.localizedDescription)")
-            }
+            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback, options: [.allowAirPlay,.allowBluetoothA2DP])
             guard let playerLayer = playerLayer() else { return }
             pictureInPictureController = AVPictureInPictureController(playerLayer: playerLayer)
             pictureInPictureController?.delegate = self
-            
-            
-//            let notificationCenter = NotificationCenter.default
-//            notificationCenter.addObserver(self, selector: #selector(enterBackground), name: UIApplication.willResignActiveNotification, object: nil)
-//            notificationCenter.addObserver(self, selector: #selector(recoverFromBackground), name: UIApplication.didBecomeActiveNotification, object: nil)
-            
-            
+            let notificationCenter = NotificationCenter.default
+            notificationCenter.addObserver(self, selector: #selector(enterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
             pipPossibleObservation = pictureInPictureController?.observe(\AVPictureInPictureController.isPictureInPicturePossible,
                                                                          options: [.initial, .new]) { [weak self] _, change in
                 guard let strongSelf = self else { return }
@@ -37,6 +27,19 @@ extension AMGPlayKit: AVPictureInPictureControllerDelegate {
         } else {
             pipDelegate?.pictureInPictureStatus(isPossible: false)
         }
+    }
+    
+    public func setPictureInPictureDelegate(_ delegate: AMGPictureInPictureDelegate) {
+        pipDelegate = delegate
+    }
+    
+    public func disablePictureInPicture(){
+        pipPossibleObservation = nil
+        pictureInPictureController?.delegate = nil
+        pictureInPictureController = nil
+        pipDelegate = nil
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
     }
     
     public func togglePictureInPicture(){
@@ -50,7 +53,6 @@ extension AMGPlayKit: AVPictureInPictureControllerDelegate {
     
     public func pictureInPictureController(_ pictureInPictureController: AVPictureInPictureController,
                                     restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void) {
-        // Restore user interface
         completionHandler(true)
     }
     
@@ -62,43 +64,9 @@ extension AMGPlayKit: AVPictureInPictureControllerDelegate {
         pipDelegate?.pictureInPictureDidStop()
     }
     
-    
     @objc internal func enterBackground(){
-//        //pipPlayer = playerLayer()?.player
-//        TempPlayer = player.unsafelyUnwrapped
-//  //      playerLayer()?.player = nil
-//        player = nil
-//        print("Test My Layer!")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        self.player.play()
+        }
     }
-    
-    @objc internal func recoverFromBackground() {
-//     //   if let pipPlayer = player { //} , let playLayer = playerLayer() {
-//   //         playLayer.player = pipPlayer
-//        player = TempPlayer //PlayKitManager.shared.    ////pipPlayer
-//  //          playerLayer()?.player = //pipPlayer as! AVPlayer
-//  //      }
-    }
-    
-    
-    
 }
-
-//class PlayerView: UIView {
-//    var player: AVPlayer? {
-//        get {
-//            return playerLayer.player
-//        }
-//
-//        set {
-//            playerLayer.player = newValue
-//        }
-//    }
-//
-//    var playerLayer: AVPlayerLayer {
-//        return layer as! AVPlayerLayer
-//    }
-//
-//    override class var layerClass: AnyClass {
-//        return AVPlayerLayer.self
-//    }
-//}

@@ -38,8 +38,10 @@ public extension PlayableItem {
         guard let serverURL = serverURL else {
             return nil
         }
+    
         
-        return URL(string: "https://\(serverURL)/index.php/extwidget/preview/partner_id/\(partnerID)/uiconf_id/\(uiConfID)/entry_id/\(entryID)/embed/iframe?flashvars[streamerType]=auto&ks=\(ks ?? "")")
+        
+        return URL(string: "\(serverURL)/index.php/extwidget/preview/partner_id/\(partnerID)/uiconf_id/\(uiConfID)/entry_id/\(entryID)/embed/iframe?flashvars[streamerType]=auto&ks=\(ks ?? "")")
     }
 
     

@@ -21,15 +21,22 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     let forwardButton = UIButton(type: UIButton.ButtonType.custom)
     let backwardButton = UIButton(type: UIButton.ButtonType.custom)
     let fullscreenButton = UIButton(type: UIButton.ButtonType.custom)
+    let minimiseButton = UIButton(type: UIButton.ButtonType.custom)
     var playImage: UIImage = UIImage()
     var skipForawrdImage: UIImage = UIImage()
     var skipBackwardImage: UIImage = UIImage()
     var pauseImage: UIImage = UIImage()
     var fullScreenImage: UIImage = UIImage()
+    var minimiseImage: UIImage = UIImage()
     var thumb: UIImage = UIImage()
     var scrubBar: UISlider = UISlider()
     
     var scrubBarBackground: UIView = UIView()
+    var spoilerFreeBackground: UIView = UIView()
+    var spoilerFreeTextView: UIView = UIView()
+    var spoilerFreeLeftView: UIView = UIView()
+    var spoilerFreeRightView: UIView = UIView()
+    
 
     var mediaLength: TimeInterval = 0
 
@@ -47,8 +54,13 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
     var isFullScreen = false
 
-    var hideFullScreenButtonInFullScreen = false
+    var hideMinimiseButton = false
     var hideFullScreenButton = false
+    
+    var spoilerFreeEnabled = false
+    
+    var liveTrackColour: UIColor = UIColor.white
+    var vodTrackColour: UIColor = UIColor.white
 
     private var playheadCounter = 0
 
@@ -57,6 +69,8 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     private var mainView: UIView = UIView(frame: CGRect.zero)
     private var bottomScrubView: UIView = UIView(frame: CGRect.zero)
     private var bottomScrubViewTrack: UIView = UIView(frame: CGRect.zero)
+    
+    private var bottomTrackEnabled = false
 
     init (hostView: UIView, delegate: AMGPlayerDelegate, config: AMGPlayKitStandardControlsConfigurationModel? = nil){
         super.init(frame: CGRect(x: 0, y: 0, width: hostView.frame.width, height: hostView.frame.height))
@@ -73,6 +87,42 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         super.init(frame: CGRect.zero)
         print ("Standard control should not be instantiated via Storyboard")
     }
+    
+    func setIsLive(){
+        setLiveColours()
+    }
+    
+    func setIsVOD() {
+        setVodColours()
+    }
+    
+    func setIsAudio() {
+        setVodColours()
+    }
+    
+    func setIsAudioLive() {
+        setLiveColours()
+    }
+    
+    internal func setLiveColours(){
+        bottomScrubViewTrack.backgroundColor = liveTrackColour
+        scrubBar.minimumTrackTintColor = liveTrackColour
+        spoilerFreeLeftView.backgroundColor = liveTrackColour
+        spoilerFreeRightView.backgroundColor = liveTrackColour
+    }
+    
+    internal func setVodColours(){
+        bottomScrubViewTrack.backgroundColor = vodTrackColour
+        scrubBar.minimumTrackTintColor = vodTrackColour
+        spoilerFreeLeftView.backgroundColor = vodTrackColour
+        spoilerFreeRightView.backgroundColor = vodTrackColour
+    }
+    
+    func setSpoilerFree(_ isSF: Bool){
+        spoilerFreeEnabled = isSF
+        spoilerFreeBackground.isHidden = !spoilerFreeEnabled
+        scrubBarBackground.isHidden = spoilerFreeEnabled
+    }
 
     func setUpControls(){
         // Set up play / pause button images and actions
@@ -84,21 +134,28 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         let y = (h / 2) - (playPauseSize / 2)
         let skipY = (h / 2) - (skipSize / 2)
         hideFullScreenButton = configModel.hideFullscreen
-        hideFullScreenButtonInFullScreen = configModel.hideFullscreenOnFS
+        hideMinimiseButton = configModel.hideMinimise
         
-        var trackColour = UIColor.init(red: 0.29, green: 0.761, blue: 0.957, alpha: 1.0)
-        
+       // var trackColour = UIColor.init(red: 0.29, green: 0.761, blue: 0.957, alpha: 1.0)
+        if let colour = UIColor.init(amghex: configModel.liveTrack){
+        liveTrackColour = colour
+        }
+        if let colour = UIColor.init(amghex: configModel.vodTrack){
+        vodTrackColour = colour
+        }
         mainView.frame = CGRect(x: 0, y: 0, width: w, height: h)
         bottomScrubView.frame = CGRect(x: 0, y: h - 2, width: w, height: 2)
         bottomScrubViewTrack.frame = CGRect(x: 0, y: 0, width: 0, height: 2)
         
         bottomScrubView.backgroundColor = .white
-        bottomScrubViewTrack.backgroundColor = trackColour
+        bottomScrubViewTrack.backgroundColor = vodTrackColour
         
         bottomScrubView.addSubview(bottomScrubViewTrack)
         
         addSubview(mainView)
+        if bottomTrackEnabled {
         addSubview(bottomScrubView)
+        }
         
         guard let bundleURL = Bundle.main.url(forResource: "AMGPlayKitBundle", withExtension: "bundle") else {
             print("Can't find bundle")
@@ -133,6 +190,12 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         } else if let myImage = UIImage(named: "fullScreenButton", in: bundle, compatibleWith: .none){
             fullScreenImage = myImage
         }
+        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
+            minimiseImage = myImage
+        } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
+            minimiseImage = myImage
+        }
+        
         if let myImage = UIImage(named: "slider_thumb", in: bundle, compatibleWith: .none){
             thumb = myImage
         }
@@ -164,24 +227,40 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         let scrubBarBackH = CGFloat(40)
         
         scrubBarBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
-        
-        scrubBarBackground.layer.cornerRadius = 10
-        scrubBarBackground.backgroundColor = UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
+        //scrubBarBackground.layer.cornerRadius = 10
+        scrubBarBackground.backgroundColor = UIColor.clear //UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
         mainView.addSubview(scrubBarBackground)
         
+        spoilerFreeBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
+        //scrubBarBackground.layer.cornerRadius = 10
+        spoilerFreeBackground.backgroundColor = UIColor.clear //UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
+        mainView.addSubview(spoilerFreeBackground)
         
-
-//        switch configModel.slideBarPosition {
-//        case .top:
-//            scrubBarYPosition = 30
-//        case .centre:
-//        scrubBarYPosition = y + playPauseSize
-//        default:
-//            if configModel.trackTimeShowing || configModel.currentTimeShowing {
-//                scrubBarYPosition -= 20
-//            }
-//            break
-//        }
+        spoilerFreeBackground.isHidden = !spoilerFreeEnabled
+        scrubBarBackground.isHidden = spoilerFreeEnabled
+        
+        let spoilerLabel = UILabel(frame: CGRect(x: x, y: y, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
+        spoilerLabel.font = .systemFont(ofSize: 12)
+        spoilerLabel.textColor = .white
+        spoilerLabel.text = "Spoiler Free"
+        spoilerLabel.sizeToFit()
+        spoilerLabel.frame = CGRect(x: 60, y: 0, width: spoilerLabel.frame.width, height: 20)
+        
+        let spoilerFreeImage = UIImage(named: "spoilerfree", in: bundle, compatibleWith: .none)
+        let spoilerFreeIcon = UIImageView(frame: CGRect(x: 24, y: 3, width: 18, height: 15))
+        spoilerFreeIcon.tintColor = UIColor.white
+        spoilerFreeIcon.image = spoilerFreeImage
+        spoilerFreeIcon.contentMode = .scaleToFill
+        
+        spoilerFreeTextView = UIView(frame: CGRect(x: 0, y: 10, width: spoilerLabel.frame.width + 80, height: 20 ))
+        
+        spoilerFreeTextView.addSubview(spoilerFreeIcon)
+        spoilerFreeTextView.addSubview(spoilerLabel)
+        
+        spoilerFreeBackground.addSubview(spoilerFreeTextView)
+        spoilerFreeBackground.addSubview(spoilerFreeLeftView)
+        spoilerFreeBackground.addSubview(spoilerFreeRightView)
+        
         
         var scrubBarx: CGFloat = 20
         var scrubBarw: CGFloat = scrubBarBackW-40
@@ -209,17 +288,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         scrubBar.addTarget(self, action: #selector(sliderReleased(_:)), for: .touchUpInside)
         scrubBar.addTarget(self, action: #selector(sliderReleased(_:)), for: .touchUpOutside)
         scrubBar.setThumbImage(thumb, for: .normal)
-        scrubBar.maximumTrackTintColor = trackColour
+        scrubBar.maximumTrackTintColor = UIColor.white
         scrubBarBackground.addSubview(scrubBar)
-
-
-//        if configModel.currentTimeShowing {
-//            currentTime = timeLabel(position: .centre)
-//            addSubview(currentTime)
-//            currentTimeShowing = true
-//        } else {
-//            currentTimeShowing = false
-//        }
+        
         
         if !hideFullScreenButton {
         fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
@@ -230,8 +301,27 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             mainView.addSubview(fullscreenButton)
         }
         
+        if !hideMinimiseButton {
+        minimiseButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 20, width: skipSize, height: skipSize)
+            minimiseButton.tintColor = UIColor.white
+            minimiseButton.contentMode = .scaleToFill
+            minimiseButton.setImage(fullScreenImage, for: .normal)
+            minimiseButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
+            mainView.addSubview(minimiseButton)
+        }
+        
+        
+        updateSpoilerFree()
         showControls(false)
 
+    }
+    
+    func updateSpoilerFree(){
+        spoilerFreeBackground.frame = scrubBarBackground.frame
+        let halfSize = (spoilerFreeBackground.frame.width - spoilerFreeTextView.frame.width) / 2
+        spoilerFreeLeftView.frame = CGRect(x: 0, y: 18, width: halfSize, height: 4)
+        spoilerFreeTextView.frame = CGRect(x: halfSize, y: 10, width: spoilerFreeTextView.frame.width, height: 20)
+        spoilerFreeRightView.frame = CGRect(x: halfSize + spoilerFreeTextView.frame.width, y: 18, width: halfSize, height: 4)
     }
 
     func setFullScreen(_ isFS: Bool) {
@@ -239,7 +329,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         if hideFullScreenButton {
             return
         }
-        fullscreenButton.isHidden = isFullScreen && hideFullScreenButtonInFullScreen
+        fullscreenButton.isHidden = isFullScreen && hideMinimiseButton
     }
 
 
@@ -339,8 +429,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     }
     
     func setTrackSize(position: TimeInterval) {
+        var width: CGFloat = 0.0
+        if position > 0.0 || mediaLength > 0.0 {
         let percentage = position / mediaLength
-        let width = frame.width * CGFloat(percentage)
+        width = frame.width * CGFloat(percentage)
+        }
         bottomScrubViewTrack.frame = CGRect(x: 0, y: 0, width: width, height: 2)
     }
 
@@ -424,6 +517,8 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
         fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
+        
+        updateSpoilerFree()
     }
     
     func showControls(_ shouldShow: Bool) {

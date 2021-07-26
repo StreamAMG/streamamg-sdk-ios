@@ -6,62 +6,7 @@
 //
 
 import Foundation
-/**
- An enum constant defenition to define the position of various UI Control elements in the standard controls
- */
-public enum AMGControlPosition: String, Codable {
-    case top = "top", bottom = "bottom", left = "left", right = "right", topleft = "topleft", topright = "topright", bottomleft = "bottomleft", bottomright = "bottomright", centre = "centre"
 
-    enum Key: CodingKey {
-        case rawValue
-    }
-
-    enum CodingError: Error {
-        case unknownValue
-    }
-    public init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: Key.self)
-        let label = try values.decode(String.self, forKey: .rawValue)
-        switch label {
-        case "top": self = .top
-        case "bottom": self = .bottom
-        case "left": self = .left
-        case "right": self = .right
-        case "topleft": self = .topleft
-        case "topright": self = .topright
-        case "bottomleft": self = .bottomleft
-        case "bottomright": self = .bottomright
-        case "centre": self = .centre
-        default:
-            self = .bottom
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: Key.self)
-        switch self {
-
-        case .top:
-            try container.encode("top", forKey: .rawValue)
-        case .bottom:
-            try container.encode("bottom", forKey: .rawValue)
-        case .left:
-            try container.encode("left", forKey: .rawValue)
-        case .right:
-            try container.encode("right", forKey: .rawValue)
-        case .topleft:
-            try container.encode("topleft", forKey: .rawValue)
-        case .topright:
-            try container.encode("topright", forKey: .rawValue)
-        case .bottomleft:
-            try container.encode("bottomleft", forKey: .rawValue)
-        case .bottomright:
-            try container.encode("bottomright", forKey: .rawValue)
-        case .centre:
-            try container.encode("centre", forKey: .rawValue)
-        }
-    }
-}
 
 public struct AMGPlayKitStandardControlsConfigurationModel: Codable {
     var fadeInTogglesPausePlay = false
@@ -79,11 +24,17 @@ public struct AMGPlayKitStandardControlsConfigurationModel: Codable {
     var skipForwardImage: String? = nil
     var skipBackwardImage: String? = nil
     var fullScreenImage: String? = nil
+    var minimiseImage: String? = nil
     var skipForwardTime = 10000
     var skipBackwardTime = 10000
     
     var hideFullscreen = false
-    var hideFullscreenOnFS = false
+    var hideMinimise = false
+    
+    var liveTrack = "#D0FF39"
+    var vodTrack = "#71ABF3"
+    
+    
 }
 
 /**
@@ -105,7 +56,7 @@ public class AMGControlBuilder {
     var skipForwardTime = 5000
     var skipBackwardTime = 5000
     var hideFullscreen = false
-    var hideFullscreenOnFS = false
+    var hideMinimise = false
     var isLiveImage: String? = nil
     var logoImage: String? = nil
     var playImage: String? = nil
@@ -113,6 +64,7 @@ public class AMGControlBuilder {
     var skipForwardImage: String? = nil
     var skipBackwardImage: String? = nil
     var fullScreenImage: String? = nil
+    var minimiseImage: String? = nil
 
     
     /**
@@ -266,8 +218,8 @@ public class AMGControlBuilder {
         return self
     }
     
-    public func hideFullScreenButtonOnFullScreen() -> AMGControlBuilder {
-        hideFullscreenOnFS = true
+    public func hideMinimiseButton() -> AMGControlBuilder {
+        hideMinimise = true
         return self
     }
 
@@ -281,7 +233,7 @@ public class AMGControlBuilder {
      Returns a complete and valid AMGPlayKitStandardControlsConfigurationModel
      */
     public func build() -> AMGPlayKitStandardControlsConfigurationModel {
-        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideFullscreenOnFS: hideFullscreenOnFS)
+        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise)
         
         
         

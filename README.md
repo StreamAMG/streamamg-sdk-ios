@@ -82,6 +82,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 0.8 - PlayKit Spoiler Free added
+
 ### 0.7 - PlayKit Picture in Picture added
 
 ### 0.6 - PlayKit State listener changes
