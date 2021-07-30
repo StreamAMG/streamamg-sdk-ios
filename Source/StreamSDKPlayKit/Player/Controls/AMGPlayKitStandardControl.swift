@@ -187,14 +187,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         if let customImage = configModel.fullScreenImage, let myImage = UIImage(named: customImage) {
             fullScreenImage = myImage
-        } else if let myImage = UIImage(named: "fullScreenButton", in: bundle, compatibleWith: .none){
+        } else if let myImage = UIImage(named: "fullscreenButton", in: bundle, compatibleWith: .none){
             fullScreenImage = myImage
         }
-        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
-            minimiseImage = myImage
-        } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
-            minimiseImage = myImage
-        }
+//        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
+//            minimiseImage = myImage
+//        } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
+//            minimiseImage = myImage
+//        }
         
         if let myImage = UIImage(named: "slider_thumb", in: bundle, compatibleWith: .none){
             thumb = myImage
@@ -301,14 +301,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             mainView.addSubview(fullscreenButton)
         }
         
-        if !hideMinimiseButton {
-        minimiseButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 20, width: skipSize, height: skipSize)
-            minimiseButton.tintColor = UIColor.white
-            minimiseButton.contentMode = .scaleToFill
-            minimiseButton.setImage(fullScreenImage, for: .normal)
-            minimiseButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
-            mainView.addSubview(minimiseButton)
-        }
+//        if !hideMinimiseButton {
+//        minimiseButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 20, width: skipSize, height: skipSize)
+//            minimiseButton.tintColor = UIColor.white
+//            minimiseButton.contentMode = .scaleToFill
+//            minimiseButton.setImage(fullScreenImage, for: .normal)
+//            minimiseButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
+//            mainView.addSubview(minimiseButton)
+//        }
         
         
         updateSpoilerFree()

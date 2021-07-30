@@ -568,9 +568,11 @@ Currently PiP will pause a video when the app goes into background, I will resol
 To access the casting URL of the currently playing media use the following function:
 
 ``` Swift
-playKit.castingURL()
+playKit.castingURL(format: AMGMediaFormat = .HLS)
 ```
 Which returns either a valid URL object (not a String), or a nil
+
+Media format is either `.HLS` or `.MP4` - Defaults to HLS
 
 ### Serving Adverts
 
@@ -599,6 +601,9 @@ amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.8.1 - Casting URL update
+- allowed selection of either MP4 or HLS format for the castiong URL
 
 ### 0.8 - Bug fixes and improvements
 - Fixed a potential crash when exiting player

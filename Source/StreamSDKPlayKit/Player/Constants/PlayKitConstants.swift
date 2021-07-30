@@ -66,4 +66,11 @@ public enum AMGControlPosition: String, Codable {
             try container.encode("centre", forKey: .rawValue)
         }
     }
+    
+    
+    
+}
+
+public enum AMGMediaFormat {
+    case MP4, HLS
 }
