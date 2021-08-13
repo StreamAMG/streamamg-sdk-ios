@@ -16,6 +16,7 @@ public protocol AMGPlayerDelegate {
     func setControlDelegate(_ delegate: AMGControlDelegate)
     func cancelTimer()
     func startControlVisibilityTimer()
+    func goLive()
     
     func minimise()
     func fullScreen()

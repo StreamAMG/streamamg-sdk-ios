@@ -37,6 +37,8 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     var spoilerFreeLeftView: UIView = UIView()
     var spoilerFreeRightView: UIView = UIView()
     
+    
+    var liveButton = UIButton()
 
     var mediaLength: TimeInterval = 0
 
@@ -61,6 +63,8 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     
     var liveTrackColour: UIColor = UIColor.white
     var vodTrackColour: UIColor = UIColor.white
+    
+    var isLive = false
 
     private var playheadCounter = 0
 
@@ -90,18 +94,26 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     
     func setIsLive(){
         setLiveColours()
+        isLive = true
+        updateIsLive()
     }
     
     func setIsVOD() {
         setVodColours()
+        isLive = false
+        updateIsLive()
     }
     
     func setIsAudio() {
         setVodColours()
+        isLive = false
+        updateIsLive()
     }
     
     func setIsAudioLive() {
         setLiveColours()
+        isLive = true
+        updateIsLive()
     }
     
     internal func setLiveColours(){
@@ -109,6 +121,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         scrubBar.minimumTrackTintColor = liveTrackColour
         spoilerFreeLeftView.backgroundColor = liveTrackColour
         spoilerFreeRightView.backgroundColor = liveTrackColour
+        liveButton.setTitleColor(liveTrackColour, for: .normal)
     }
     
     internal func setVodColours(){
@@ -165,6 +178,20 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             print("Can't use bundle")
             return
         }
+        
+        guard let fontURL = bundle.url(forResource: "spartan", withExtension: "otf") else {
+            print("Spartan font was not found in the module bundle")
+            return
+        }
+        var error: Unmanaged<CFError>?
+        CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error)
+        print(error ?? "Successfully registered font: Spartan font")
+        
+        for family in UIFont.familyNames.sorted() {
+            let names = UIFont.fontNames(forFamilyName: family)
+            print("Family: \(family) Font names: \(names)")
+        }
+        
         if let customImage = configModel.playImage, let myImage = UIImage(named: customImage) {
         playImage = myImage
         } else if let myImage = UIImage(named: "standard_ui_playButton", in: bundle, compatibleWith: .none){
@@ -190,11 +217,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         } else if let myImage = UIImage(named: "fullscreenButton", in: bundle, compatibleWith: .none){
             fullScreenImage = myImage
         }
-//        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
-//            minimiseImage = myImage
-//        } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
-//            minimiseImage = myImage
-//        }
+        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
+            minimiseImage = myImage
+        } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
+            minimiseImage = myImage
+        }
         
         if let myImage = UIImage(named: "slider_thumb", in: bundle, compatibleWith: .none){
             thumb = myImage
@@ -222,16 +249,16 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         // Add scrub bar
 
         let scrubBarBackY = h-45
-        let scrubBarBackX = CGFloat(20)
-        let scrubBarBackW = w-40
+        let scrubBarBackX = CGFloat(0)
+        let scrubBarBackW = w-20
         let scrubBarBackH = CGFloat(40)
         
         scrubBarBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
         //scrubBarBackground.layer.cornerRadius = 10
-        scrubBarBackground.backgroundColor = UIColor.clear //UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
+        //scrubBarBackground.backgroundColor = UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7) //UIColor.clear //
         mainView.addSubview(scrubBarBackground)
         
-        spoilerFreeBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
+        spoilerFreeBackground = UIView(frame: CGRect(x: scrubBarBackX + 20, y: scrubBarBackY, width: scrubBarBackW - 20, height: scrubBarBackH))
         //scrubBarBackground.layer.cornerRadius = 10
         spoilerFreeBackground.backgroundColor = UIColor.clear //UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
         mainView.addSubview(spoilerFreeBackground)
@@ -240,7 +267,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         scrubBarBackground.isHidden = spoilerFreeEnabled
         
         let spoilerLabel = UILabel(frame: CGRect(x: x, y: y, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
-        spoilerLabel.font = .systemFont(ofSize: 12)
+        spoilerLabel.font = UIFont(name: "LeagueSpartan-Bold", size: 12)   //.systemFont(ofSize: 12)
         spoilerLabel.textColor = .white
         spoilerLabel.text = "Spoiler Free"
         spoilerLabel.sizeToFit()
@@ -267,14 +294,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         
         if configModel.trackTimeShowing {
             startTime = timeLabel()
-            endTime = timeLabel()
-            let endTimeX = scrubBarBackW - endTime.frame.width
-            endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
-            endTime.textAlignment = .left
+           // endTime = timeLabel()
+//            let endTimeX = scrubBarBackW - endTime.frame.width
+//            endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
+//            endTime.textAlignment = .left
             scrubBarBackground.addSubview(startTime)
-            scrubBarBackground.addSubview(endTime)
+//            scrubBarBackground.addSubview(endTime)
             scrubBarx = startTime.frame.width
-            scrubBarw = scrubBarBackW - startTime.frame.width - endTime.frame.width
+            scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width
             trackTimeShowing = true
         } else {
             trackTimeShowing = false
@@ -291,6 +318,17 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         scrubBar.maximumTrackTintColor = UIColor.white
         scrubBarBackground.addSubview(scrubBar)
         
+        let dummyLiveText = UITextView(frame: CGRect(x: 0,y: 0,width: CGFloat.greatestFiniteMagnitude, height: 20))
+        dummyLiveText.font = UIFont(name: "LeagueSpartan-Bold", size: 8)
+        dummyLiveText.text = "GO LIVE"
+        dummyLiveText.sizeToFit()
+        liveButton.titleLabel?.font = UIFont(name: "LeagueSpartan-Bold", size: 8) //.systemFont(ofSize: 12)
+        liveButton.setTitleColor(.white, for: .normal)
+        liveButton.setTitle("GO LIVE", for: .normal)
+        liveButton.frame = CGRect(x: 0, y: 10, width: dummyLiveText.frame.width + 10, height: 20)
+        liveButton.addTarget(self, action: #selector(goLive), for: .touchUpInside)
+        scrubBarBackground.addSubview(liveButton)
+
         
         if !hideFullScreenButton {
         fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
@@ -301,23 +339,43 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             mainView.addSubview(fullscreenButton)
         }
         
-//        if !hideMinimiseButton {
-//        minimiseButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 20, width: skipSize, height: skipSize)
-//            minimiseButton.tintColor = UIColor.white
-//            minimiseButton.contentMode = .scaleToFill
-//            minimiseButton.setImage(fullScreenImage, for: .normal)
-//            minimiseButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
-//            mainView.addSubview(minimiseButton)
-//        }
+
         
-        
+        updateIsLive()
         updateSpoilerFree()
         showControls(false)
 
     }
     
+    func updateIsLive(){
+        var scrubBarx: CGFloat = 10
+        let scrubBarBackW = scrubBarBackground.frame.width
+        var scrubBarw: CGFloat = scrubBarBackW - 20
+        
+        if isLive {
+            trackTimeShowing = false
+            liveButton.isHidden = false
+        } else {
+            liveButton.isHidden = true
+        }
+
+        if isLive {
+            scrubBarx = liveButton.frame.width + 5
+            scrubBarw = scrubBarBackW - liveButton.frame.width - 10
+        } else {
+            if trackTimeShowing {
+//                let endTimeX = scrubBarBackW - endTime.frame.width
+//                endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
+                scrubBarx = startTime.frame.width + 5
+                scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width - 10
+            }
+        }
+        scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
+    }
+    
+    
     func updateSpoilerFree(){
-        spoilerFreeBackground.frame = scrubBarBackground.frame
+        //spoilerFreeBackground.frame = scrubBarBackground.frame
         let halfSize = (spoilerFreeBackground.frame.width - spoilerFreeTextView.frame.width) / 2
         spoilerFreeLeftView.frame = CGRect(x: 0, y: 18, width: halfSize, height: 4)
         spoilerFreeTextView.frame = CGRect(x: halfSize, y: 10, width: spoilerFreeTextView.frame.width, height: 20)
@@ -337,10 +395,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         let x = CGFloat(0)
         let y = CGFloat(0)
         let label = UILabel(frame: CGRect(x: x, y: y, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
-        label.font = .systemFont(ofSize: 12)
+        label.font = UIFont(name: "LeagueSpartan-Bold", size: 8)  //.systemFont(ofSize: 8)
         label.textColor = .white
-        label.text = "00:00:000"
+        label.text = "00:00:00/00:00:00"
         label.sizeToFit()
+        //label.backgroundColor = UIColor.red
         let labelY: CGFloat = (40 - label.frame.height) / 2
         label.frame = CGRect(x: x, y: labelY, width: label.frame.width, height: label.frame.height)
         label.textAlignment = .right
@@ -355,6 +414,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         player?.scrub(position: TimeInterval(sender.value))
         }
         }
+    }
+    
+    @objc func goLive() {
+        player?.goLive()
+        liveButton.titleLabel?.text = "Live"
     }
 
     @objc func sliderTouched(_ sender: UISlider){
@@ -413,18 +477,25 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         setTrackSize(position: position)
         if trackTimeShowing {
-            if currentTimeShowing {
-                currentTime.text = timeForDisplay(time: position)
-                startTime.text = "00:00"
-                endTime.text = timeForDisplay(time: mediaLength)
-            } else {
+//            if currentTimeShowing {
+//                currentTime.text = timeForDisplay(time: position)
+//                startTime.text = "00:00"
+//                endTime.text = timeForDisplay(time: mediaLength)
+//            } else {
                 let timeRemaining = mediaLength - position
-                startTime.text = timeForDisplay(time: position)
-                endTime.text = timeForDisplay(time: timeRemaining)
-            }
+                startTime.text = "\(timeForDisplay(time: position)) / \(timeForDisplay(time: timeRemaining))"
+            
+            
+//                endTime.text = timeForDisplay(time: timeRemaining)
+//            }
         } else if currentTimeShowing {
             currentTime.text = timeForDisplay(time: position)
         }
+        }
+        if (position < mediaLength - 1) {
+            liveButton.setTitle("GO LIVE", for: .normal)
+        } else {
+            liveButton.setTitle("LIVE", for: .normal)
         }
     }
     
@@ -492,32 +563,24 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         forwardButton.frame = CGRect(x: x + playPauseSize + 20, y: skipY, width: skipSize, height: skipSize)
 
-        
-        
         let scrubBarBackY = h-45
-        let scrubBarBackX = CGFloat(20)
-        let scrubBarBackW = w-40
+        let scrubBarBackX = CGFloat(0)
+        let scrubBarBackW = w-20
         let scrubBarBackH = CGFloat(40)
         
         scrubBarBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
+        spoilerFreeBackground.frame = CGRect(x: scrubBarBackX + 20, y: scrubBarBackY, width: scrubBarBackW - 20, height: scrubBarBackH)
         
-        
-        var scrubBarx: CGFloat = 20
-        var scrubBarw: CGFloat = scrubBarBackW-40
-        
-        if configModel.trackTimeShowing {
-            let endTimeX = scrubBarBackW - endTime.frame.width
-            endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
-            scrubBarx = startTime.frame.width + 5
-            scrubBarw = scrubBarBackW - startTime.frame.width - endTime.frame.width - 10
-            trackTimeShowing = true
-        } else {
-            trackTimeShowing = false
-        }
 
-        scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
+    
         fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
         
+        if (isFullScreen) {
+            fullscreenButton.setImage(minimiseImage, for: .normal)
+        } else {
+            fullscreenButton.setImage(fullScreenImage, for: .normal)
+        }
+        updateIsLive()
         updateSpoilerFree()
     }
     
@@ -525,6 +588,5 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         mainView.isHidden = !shouldShow
         bottomScrubView.isHidden = shouldShow
     }
-
 
 }

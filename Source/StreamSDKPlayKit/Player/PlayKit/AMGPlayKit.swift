@@ -406,6 +406,15 @@ import AVKit
     }
     
     /**
+     Set the playhead to the 'live' position
+     */
+    public func goLive() {
+        if let duration = player?.duration {
+        player?.currentTime = duration - 1
+        }
+    }
+    
+    /**
      Manually set the playhead for the queued media track
      */
     public func scrub(position: TimeInterval) {
