@@ -42,6 +42,10 @@ import AVKit
     
     internal var controlVisibleTimer: Timer? = nil
     
+    internal var castingCompletion: ((URL?) -> Void)? = nil
+    internal var castingURL: URL? = nil
+    internal var initialCastingURL: String? = nil
+    
     var orientationTime: TimeInterval = 0
     
     var currentOrientation: UIInterfaceOrientation = .portrait

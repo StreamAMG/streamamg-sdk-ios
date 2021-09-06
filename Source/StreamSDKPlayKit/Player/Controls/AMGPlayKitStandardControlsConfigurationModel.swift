@@ -14,7 +14,7 @@ public struct AMGPlayKitStandardControlsConfigurationModel: Codable {
     var fadeOutTime = 0
     var fadeOutAfter = 5000
  //   var slideBarPosition: AMGControlPosition = .bottom
-    var trackTimeShowing = false
+    var trackTimeShowing = true
  //   var currentTimeShowing = false
 
     var isLiveImage: String? = nil
@@ -51,8 +51,8 @@ public class AMGControlBuilder {
     var fadeOutTime = 0
     var fadeOutAfter = 5000
     var slideBarPosition: AMGControlPosition = .bottom
-    var trackTimeShowing = false
-    var currentTimeShowing = false
+    var trackTimeShowing = true
+//    var currentTimeShowing = false
     var skipForwardTime = 5000
     var skipBackwardTime = 5000
     var hideFullscreen = false
@@ -185,13 +185,13 @@ public class AMGControlBuilder {
         return self
     }
 
-    /**
-     Toggle the visibility of the current playhead position (the current play time)
-     */
-    public func setCurrentTimeShowing(_ isOn: Bool) -> AMGControlBuilder {
-        currentTimeShowing = isOn
-        return self
-    }
+//    /**
+//     Toggle the visibility of the current playhead position (the current play time)
+//     */
+//    public func setCurrentTimeShowing(_ isOn: Bool) -> AMGControlBuilder {
+//        currentTimeShowing = isOn
+//        return self
+//    }
 
     /**
     Set the time skipped for backward and forward skip in miliseconds

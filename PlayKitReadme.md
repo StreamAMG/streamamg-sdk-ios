@@ -144,7 +144,7 @@ It is also possible to configure these settings by using the AMGControlBuilder c
 ``` Swift
 let controls = AMGControlBuilder()
     .setHideDelay(2500) // sets the delay of inactivity to 2.5 seconds (2500 Milliseconds) before hiding the controls
-    .setTrackTimeShowing(true) // Shows the start and end times
+    .setTrackTimeShowing(false) // Hides the start and end times
     .build()
 
     playKit.addStandardControl(config: controls)
@@ -568,10 +568,16 @@ Currently PiP will pause a video when the app goes into background, I will resol
 To access the casting URL of the currently playing media use the following function:
 
 ``` Swift
-playKit.castingURL(format: AMGMediaFormat = .HLS)
+playKit.castingURL(format: AMGMediaFormat = .HLS, completion: @escaping ((URL?) -> Void))
 ```
-Which returns either a valid URL object (not a String), or a nil
+The completion returns a fully qualified casting URL (or nil on error)
 
+for example:
+``` Swift
+playKit.castingURL(format: .HLS){ (mediaURL: URL?) in
+    // Work with HLS URL here
+}
+```
 Media format is either `.HLS` or `.MP4` - Defaults to HLS
 
 ### Serving Adverts
@@ -601,6 +607,15 @@ amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.8.3 - Standard UI updates
+- Change default visibility of start / end times to showing
+- Address small offset for scrub bar when no track time showing
+- Change behaviour of scrub bar to scrub to half a second before the end of the track if pulled all the way to the right
+
+### 0.8.2 - Change CastingURL to avoid redirections
+- Force casting URL to return a redirected URL if required (HLS only)
+- Change call to require completion
 
 ### 0.8.1 - Casting URL update
 - allowed selection of either MP4 or HLS format for the castiong URL

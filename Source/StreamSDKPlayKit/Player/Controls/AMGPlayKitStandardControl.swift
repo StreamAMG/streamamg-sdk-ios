@@ -248,9 +248,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         mainView.addSubview(forwardButton)
         // Add scrub bar
 
-        let scrubBarBackY = h-45
-        let scrubBarBackX = CGFloat(0)
-        let scrubBarBackW = w-20
+        let scrubBarBackY = h-65
+        let scrubBarBackX = CGFloat(20)
+        let scrubBarBackW = w-40
         let scrubBarBackH = CGFloat(40)
         
         scrubBarBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
@@ -402,7 +402,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         //label.backgroundColor = UIColor.red
         let labelY: CGFloat = (40 - label.frame.height) / 2
         label.frame = CGRect(x: x, y: labelY, width: label.frame.width, height: label.frame.height)
-        label.textAlignment = .right
+        label.textAlignment = .center
         label.text = ""
         return label
     }
@@ -427,7 +427,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     }
 
     @objc func sliderReleased(_ sender: UISlider){
-        player?.scrub(position: TimeInterval(sender.value))
+        var time: Double = Double(sender.value)
+        if time >= mediaLength - 0.5 {
+            time = mediaLength - 0.5
+        }
+        player?.scrub(position: TimeInterval(time))
         updatePlayHeadManually = false
         player?.startControlVisibilityTimer()
     }
@@ -563,12 +567,13 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         forwardButton.frame = CGRect(x: x + playPauseSize + 20, y: skipY, width: skipSize, height: skipSize)
 
-        let scrubBarBackY = h-45
-        let scrubBarBackX = CGFloat(0)
-        let scrubBarBackW = w-20
+        let scrubBarBackY = h-65
+        let scrubBarBackX = CGFloat(20)
+        let scrubBarBackW = w-40
         let scrubBarBackH = CGFloat(40)
         
         scrubBarBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
+      //  scrubBarBackground.backgroundColor = UIColor.red
         spoilerFreeBackground.frame = CGRect(x: scrubBarBackX + 20, y: scrubBarBackY, width: scrubBarBackW - 20, height: scrubBarBackH)
         
 

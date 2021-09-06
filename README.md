@@ -82,6 +82,10 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 0.8.3 - PlayKit minor updates
+
+### 0.8.2 - PlayKit HLS casting update
+
 ### 0.8.1 - PlayKit Update to CastingURL function
 
 ### 0.8 - PlayKit Spoiler Free added
