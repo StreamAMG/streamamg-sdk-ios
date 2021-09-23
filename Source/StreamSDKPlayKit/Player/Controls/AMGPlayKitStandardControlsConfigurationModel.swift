@@ -65,6 +65,9 @@ public class AMGControlBuilder {
     var skipBackwardImage: String? = nil
     var fullScreenImage: String? = nil
     var minimiseImage: String? = nil
+    
+    var liveTrack = "#D0FF39"
+    var vodTrack = "#71ABF3"
 
     
     /**
@@ -107,51 +110,51 @@ public class AMGControlBuilder {
         return self
     }
     
-    /**
-    Specify the image to use for the 'is live'
-     */
-    public func isLiveImage(_ image: String) -> AMGControlBuilder {
-        self.isLiveImage = image
-        return self
-    }
-    
-    /**
-    Specify the image to use for the logo / watermark
-     */
-    public func logoImage(_ image: String) -> AMGControlBuilder {
-        self.logoImage = image
-        return self
-    }
+//    /**
+//    Specify the image to use for the 'is live'
+//     */
+//    public func isLiveImage(_ image: String) -> AMGControlBuilder {
+//        self.isLiveImage = image
+//        return self
+//    }
+//    
+//    /**
+//    Specify the image to use for the logo / watermark
+//     */
+//    public func logoImage(_ image: String) -> AMGControlBuilder {
+//        self.logoImage = image
+//        return self
+//    }
 
-    /**
-     Not currently supported
-
-     Toggle whether the current media toggles play state when the controls are made visible
-     */
-    public func setFadeInToggleOn(_ isOn: Bool) -> AMGControlBuilder {
-        fadeInTogglesPausePlay = isOn
-        return self
-    }
-
-    /**
-     Not currently supported
-
-     Set the duration of the fade in animation of the controls in miliseconds
-     */
-    public func setFadeInTime(_ time: Int) -> AMGControlBuilder {
-        fadeInTime = time
-        return self
-    }
-
-    /**
-     Not currently supported
-
-     Set the duration of the fade out animation of the controls in miliseconds
-     */
-    public func setFadeOutTime(_ time: Int) -> AMGControlBuilder {
-        fadeOutTime = time
-        return self
-    }
+//    /**
+//     Not currently supported
+//
+//     Toggle whether the current media toggles play state when the controls are made visible
+//     */
+//    public func setFadeInToggleOn(_ isOn: Bool) -> AMGControlBuilder {
+//        fadeInTogglesPausePlay = isOn
+//        return self
+//    }
+//
+//    /**
+//     Not currently supported
+//
+//     Set the duration of the fade in animation of the controls in miliseconds
+//     */
+//    public func setFadeInTime(_ time: Int) -> AMGControlBuilder {
+//        fadeInTime = time
+//        return self
+//    }
+//
+//    /**
+//     Not currently supported
+//
+//     Set the duration of the fade out animation of the controls in miliseconds
+//     */
+//    public func setFadeOutTime(_ time: Int) -> AMGControlBuilder {
+//        fadeOutTime = time
+//        return self
+//    }
 
     /**
      Set the delay, in miliseconds, of the inactivity timer before hiding the controls
@@ -161,19 +164,19 @@ public class AMGControlBuilder {
         return self
     }
 
-    /**
-     Set the position of the scrub bar on the player, can be one of .top, .middle or .bottom
-     All other AMGControlPosition values will default to using .bottom
-     */
-    public func setSlideBarPosition(_ position: AMGControlPosition) -> AMGControlBuilder {
-        switch position {
-        case .top, .centre, .bottom:
-        slideBarPosition = position
-        default:
-        slideBarPosition = .bottom
-        }
-        return self
-    }
+//    /**
+//     Set the position of the scrub bar on the player, can be one of .top, .middle or .bottom
+//     All other AMGControlPosition values will default to using .bottom
+//     */
+//    public func setSlideBarPosition(_ position: AMGControlPosition) -> AMGControlBuilder {
+//        switch position {
+//        case .top, .centre, .bottom:
+//        slideBarPosition = position
+//        default:
+//        slideBarPosition = .bottom
+//        }
+//        return self
+//    }
 
     /**
      Toggle the visibility of the current track time
@@ -228,12 +231,51 @@ public class AMGControlBuilder {
         return self
     }
 
+    public func scrubBarColour(colour: String) -> AMGControlBuilder{
+        var newColour = colour
+        if !colour.starts(with: "#"){
+            newColour = "#\(colour)"
+        }
+        if newColour.count != 7 {
+            print("Invalid colour specified for Scrub Bar - \(newColour)")
+            return self
+        }
+        liveTrack = newColour
+        vodTrack = newColour
+        return self
+    }
+    
+    public func scrubBarLiveColour(colour: String) -> AMGControlBuilder{
+        var newColour = colour
+        if !colour.starts(with: "#"){
+            newColour = "#\(colour)"
+        }
+        if newColour.count != 7 {
+            print("Invalid colour specified for Live Scrub Bar - \(newColour)")
+            return self
+        }
+        liveTrack = newColour
+        return self
+    }
+    
+    public func scrubBarVODColour(colour: String) -> AMGControlBuilder{
+        var newColour = colour
+        if !colour.starts(with: "#"){
+            newColour = "#\(colour)"
+        }
+        if newColour.count != 7 {
+            print("Invalid colour specified for VOD Scrub Bar - \(newColour)")
+            return self
+        }
+        vodTrack = newColour
+        return self
+    }
 
     /**
      Returns a complete and valid AMGPlayKitStandardControlsConfigurationModel
      */
     public func build() -> AMGPlayKitStandardControlsConfigurationModel {
-        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise)
+        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack)
         
         
         

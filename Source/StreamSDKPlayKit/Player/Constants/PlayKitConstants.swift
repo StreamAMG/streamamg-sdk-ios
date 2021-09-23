@@ -74,3 +74,7 @@ public enum AMGControlPosition: String, Codable {
 public enum AMGMediaFormat {
     case MP4, HLS
 }
+
+public enum AMGAnalyticsService {
+    case DISABLED, YOUBORA, AMGANALYTICS
+}

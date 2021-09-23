@@ -19,7 +19,8 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
     
 
     private static var partnerID = 0
-    private static var baseURL = "https://nudeiys3md.execute-api.eu-west-1.amazonaws.com/api/submit"
+    //private static var baseURL = "https://nudeiys3md.execute-api.eu-west-1.amazonaws.com/api/submit"
+    private static var baseURL = "http://stats.mp.streamamg.com/SessionUpdate?"
     
     // MARK: - Private local variables
     
@@ -205,11 +206,11 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                     self.sendEvent(event: event)
                 }
             default:
-                self.messageBus?.addObserver(self, events: [event.self]) { [weak self] event in
-                    guard let self = self else { return }
+//                self.messageBus?.addObserver(self, events: [event.self]) { [weak self] event in
+//                    guard let self = self else { return }
 //                    self.sendEvent(event: event)
 //                    print("Event: \(event)")
-                }
+//                }
             break
             //default: assertionFailure("plugin \(type(of:self)) all events must be handled")
             }
@@ -295,7 +296,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         }
         let builtRequest = requestBuilder.build()
         
- //       print("*** URL *** \(builtRequest.url)")
+        print("*** URL *** \(builtRequest.url)")
  //       print("*** BODY *** \(String(describing: String(data: builtRequest.dataBody ?? Data(), encoding: .utf8)))")
         KNKRequestExecutor.shared.send(request: builtRequest)
     }
@@ -370,15 +371,44 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                 throw AMGAnalyticsError.unableToCreateRequestBuilder
             }
             
-            
-            requestBuilder.method = .post
-            requestBuilder.add(headerKey: "Content-Type", headerValue: "application/json")
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            if let json = try? encoder.encode(AMGAnalyticsRequestWrapper(data: self)), let body = String(data: json, encoding: .utf8){
-                let swiftyJson = JSON(parseJSON: body)
-                requestBuilder.jsonBody = swiftyJson
+            if !sessionID.isEmpty{
+            requestBuilder.setParam(key: "sid", value: sessionID)
+            }
+            requestBuilder.setParam(key: "eid", value: entryID)
+            requestBuilder.setParam(key: "dhm", value: heatmap)
+            requestBuilder.setParam(key: "pid", value: "\(partnerID)")
+            if let entryDuration = entryDuration{
+            requestBuilder.setParam(key: "den", value: "\(entryDuration)")
+            }
+                if let connectedDuration = connectedDuration{
+            requestBuilder.setParam(key: "dcn", value: "\(connectedDuration)")
                 }
+                    if let playedDuration = playedDuration{
+            requestBuilder.setParam(key: "dpl", value: "\(playedDuration)")
+                    }
+            if let referrerURL = referrerURL{
+            requestBuilder.setParam(key: "rurl", value: referrerURL)
+            }
+                        
+                        if let videoLoadTime = videoLoadTime{
+            requestBuilder.setParam(key: "vlt", value: "\(videoLoadTime)")
+                        }
+                            if let videoLoadStatus = videoLoadStatus{
+            requestBuilder.setParam(key: "vls", value: "\(videoLoadStatus)")
+                            }
+            requestBuilder.setParam(key: "vnt", value: "\(videoEvent)")
+            requestBuilder.setParam(key: "tsp", value: "\(timeStamp)")
+
+            
+           // requestBuilder.method = .post
+//            requestBuilder.method = .get
+//            requestBuilder.add(headerKey: "Content-Type", headerValue: "application/json")
+//            let encoder = JSONEncoder()
+//            encoder.dateEncodingStrategy = .iso8601
+//            if let json = try? encoder.encode(AMGAnalyticsRequestWrapper(data: self)), let body = String(data: json, encoding: .utf8){
+//                let swiftyJson = JSON(parseJSON: body)
+//                requestBuilder.jsonBody = swiftyJson
+//                }
             
             return requestBuilder
             
@@ -409,30 +439,30 @@ struct AMGAnalyticsResponseSerializer: ResponseSerializer {
     
     func serialize(data: Data) throws -> Any {
         
-        if let response = try? JSONDecoder().decode(AMGAnalyticsResponseWrapper.self, from: data), let sid = response.sid {
-            return AMGAnalyticsResponse.success(sessionID: sid)
+//        if let response = try? JSONDecoder().decode(AMGAnalyticsResponseWrapper.self, from: data), let sid = response.sid {
+//            return AMGAnalyticsResponse.success(sessionID: sid)
+//        }
+//
+//        return AMGAnalyticsResponse.failure(errorMessage: "Unknown Error")
+        guard let dataAsString = String(data: data, encoding: .utf8) else {
+            throw ResponseError.unableToDecodeData
         }
-        
-        return AMGAnalyticsResponse.failure(errorMessage: "Unknown Error")
-//        guard let dataAsString = String(data: data, encoding: .utf8) else {
-//            throw ResponseError.unableToDecodeData
-//        }
-//
-//        let components = dataAsString.split(separator: ":")
-//        guard components.count == 2 else {
-//            throw ResponseError.unexpectedFormat
-//        }
-//
-//        let ok = components[0]
-//        let payload = String(components[1])
-//
-//        if ok == "OK" {
-//            return AMGAnalyticsResponse.success(sessionID: payload)
-//        } else if ok == "KO" {
-//            return AMGAnalyticsResponse.failure(errorMessage: payload)
-//        } else {
-//            throw ResponseError.unexpectedFormat
-//        }
+
+        let components = dataAsString.split(separator: ":")
+        guard components.count == 2 else {
+            throw ResponseError.unexpectedFormat
+        }
+
+        let ok = components[0]
+        let payload = String(components[1])
+
+        if ok == "OK" {
+            return AMGAnalyticsResponse.success(sessionID: payload)
+        } else if ok == "KO" {
+            return AMGAnalyticsResponse.failure(errorMessage: payload)
+        } else {
+            throw ResponseError.unexpectedFormat
+        }
     }
     
     

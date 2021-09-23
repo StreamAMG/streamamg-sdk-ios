@@ -21,18 +21,19 @@ The class a developer would interact with is simply called 'AMGPlayKit', this si
 To instantiate an instance of AMGPlaykit, the following initialiser should be called:
 
 ``` Swift
-public init(frame: CGRect, partnerID: Int)
+public init(frame: CGRect, partnerID: Int, analytics: AMGAnalyticsConfig? = nil)
 ```
 for example, to create a 16:9 video player at :
 
 ``` Swift
 let width = self.view.frame.size.width
 let height = width * 0.5625
-let playKit = AMGPlayKit(frame: CGRect(x: 0, y: 0, width: width, height: height), partnerID: 1111111)
+let analyticsConfig = AMGAnalyticsConfig(youboraAccountCode: "youbora_account_code") // Optional
+let playKit = AMGPlayKit(frame: CGRect(x: 0, y: 0, width: width, height: height), partnerID: 1111111, analytics: analyticsConfig)
 ```
 You can also initialise the PlayKit without a PartnerID
 ``` Swift
-public init(frame: CGRect)
+public init(frame: CGRect, analytics: AMGAnalyticsConfig? = nil)
 ```
 But you will be required to send the PartnerID separately to play media.
 
@@ -49,7 +50,7 @@ The following setup code should be carried out in the 'viewDidAppear' function:
 Create the player:
 
 ``` Swift
-amgPlaykit?.createPlayer()
+amgPlaykit?.createPlayer(analytics: AMGAnalyticsConfig? = nil)
 ```
 
 (Optional) Add the partnerID - see 'Manually updating the PartnerID'
@@ -65,6 +66,23 @@ override func viewDidDisappear(_ animated: Bool) {
 }
 ```
 
+### Adding an analytics service
+
+Currently Playkit supports 2 anayltics services, StreamAMG's own Media Player analyics service, and Youbora analytics.
+To use either service, you should instantiate the player with a configuration model:
+
+``` Swift
+init(youboraAccountCode: String)
+```
+
+or 
+
+``` Swift
+init(amgAnalyticsPartnerID: Int)
+```
+
+If you do not pass an analytics configuration during initialisation, no analytics service will be used
+
 ### Manually updating the PartnerID
 
 PartnerID can be added or changed programatically with the function
@@ -79,16 +97,6 @@ It should be noted that you cam also send a new PartnerID with any new media sen
 amgPlaykit?.addPartnerID(partnerId: 11111111)
 ```
 
-### Media Analytics
-
-Media analytics are automatically included when PlayKit is instantiated.
-
-All analytics data is currently sent to a standard URL, if you require them to be sent elsewhere, you can use the function
-
-``` Swift
-public func setAnalyticsURL(_ url: String)
-```
-
 ## Standard Media controls
 
 A set of UI Controls are provided as standard for the Play Kit, but these are not enabled by default.
@@ -101,11 +109,9 @@ playKit.addStandardControl()
 
 This adds a UI that appears when the user touches the Play Kit window, and has the following characteristics:
 
-- Colour scheme is the standard iOS colours for the components (white and blue)
 - Scrub bar is positioned at the bottom of the player
 - The play state is NOT toggled when the user reveals the controls
 - The controls disappear after 5 seconds of no interaction
-- Track times and current times are not shown
 - Skip forward and backward buttons skip 5 seconds
 
 You can control some of these defaults programatically:
@@ -162,48 +168,6 @@ Toggle the visibility of the current track time
 .setTrackTimeShowing(_ isOn: Bool)
 ```
 
-Set the time, in milliseconds, of skip forward / backward controls
-``` Swift
-.setSkipTime(_ time: Int)
-```
-
-Set the time, in milliseconds, of skip forward control
-``` Swift
-.setSkipForwardTime(_ time: Int)
-```
-
-Set the time, in milliseconds, of skip backward control
-``` Swift
-.setSkipBackwardTime(_ time: Int)
-```
-
-The following options are available, but not yet implemented:
-
-Toggle whether the current media toggles play state when the controls are made visible
-``` Swift
-.setFadeInToggleOn(_ isOn: Bool)
-```
-
-Set the duration of the fade in animation of the controls
-``` Swift
-.setFadeInTime(_ time: Int)
-```
-
-Set the duration of the fade out animation of the controls
-``` Swift
-.setFadeOutTime(_ time: Int)
-```
-
-Hide the 'fullscreen' button
-``` Swift
-.hideFullScreenButton()
-```
-
-Hide the 'fullscreen' button when the player is in full screen
-``` Swift
-.hideFullScreenButtonOnFullScreen()
-```
-
 Specify the image to use for the play button
 ``` Swift
 .playImage(_ image: String)
@@ -219,6 +183,16 @@ Specify the image to use for the fullscreen button
 .fullScreenImage(_ image: String)
 ```
 
+Hide the 'fullscreen' button when the player is not in full screen
+``` Swift
+.hideFullScreenButton()
+```
+
+Hide the 'minimise' button when the player is in full screen
+``` Swift
+.hideMinimiseButton()
+```
+
 Specify the image to use for the skip forwards button
 ``` Swift
 .skipForwardImage(_ image: String)
@@ -229,14 +203,34 @@ Specify the image to use for the skip backward button
 .skipBackwardImage(_ image: String)
 ```
 
-Specify the image to use for the 'is live'
+Set the time, in milliseconds, of skip forward / backward controls
 ``` Swift
-.isLiveImage(_ image: String)
+.setSkipTime(_ time: Int)
 ```
 
-Specify the image to use for the logo / watermark
+Set the time, in milliseconds, of skip forward control
 ``` Swift
-.logoImage(_ image: String)
+.setSkipForwardTime(_ time: Int)
+```
+
+Set the time, in milliseconds, of skip backward control
+``` Swift
+.setSkipBackwardTime(_ time: Int)
+```
+
+Set the colour of the scrub bar 'tracked' time to a hex formatted RGB colour (eg "#AA00D3")
+``` Swift
+.scrubBarColour(colour: String)
+```
+
+Set the colour of the live scrub bar 'tracked' time to a hex formatted RGB colour (eg "#AA00D3")
+``` Swift
+.scrubBarLiveColour(colour: String)
+```
+
+Set the colour of the VOD scrub bar 'tracked' time to a hex formatted RGB colour (eg "#AA00D3")
+``` Swift
+.scrubBarVODColour(colour: String)
 ```
 
 ## Media overlays
@@ -422,7 +416,7 @@ As well as (or instead of) changing via a physical orientation change, you can u
 
 To disable this completely, use the '.hideFullScreenButton()' builder function when creating the Control UI configuration
 
-The full sceen button can also be disabled only when the Play Kit is full screen using the '.hideFullScreenButtonOnFullScreen()' instead.
+A minimise button will be show in full screen mode, thiscan also be disabled using the '.hideMinimiseButton()' function.
 
 If using a non standard Control UI, you can simply call the following functions to implement your own full screen button:
 
@@ -444,6 +438,8 @@ There are only 4 required elements when requesting media to be played:
 * Media URL
 * Entry ID
 * KS (where needed)
+
+you can also pass a 'mediaType' element to force the player into 'live' mode if required - see below
 
 Please note it is no longer required to pass the UIConfig parameter to PlayKit.
 
@@ -468,7 +464,15 @@ playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, 
 
 If the media does not require a KSession token, this should be left as null
 
-The mediaType defaults to VOD and affects the UI Controls, as well as the player in general.
+### Forcing live mode
+
+When sending media to the player, the mediaType defaults to VOD and will automatically attempt to determine if the media is live or VOD, this will affect the scrub bar colours (if they are different) and the layout of the scrub bar.
+
+To force the player into 'live' mode, 'mediaType: .Live' should be passed to the player when sending media
+
+``` Swift
+public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .Live)
+```
 
 'AMGMediaType' is defined as:
 
@@ -477,6 +481,8 @@ public enum AMGMediaType {
     case Live, VOD, Audio, Live_Audio
 }
 ```
+
+Currently the player is either 'Live' or 'VOD'
 
 ### State Listener
 
@@ -561,7 +567,7 @@ playKit.playerLayer()
 ```
 
 #### Warning
-Currently PiP will pause a video when the app goes into background, I will resolve this, but for now, PiP should work fine.
+Currently PiP will pause a video when the app goes into background, this will be resolved, but for now, PiP should work fine.
 
 ### Casting URL
 
@@ -579,6 +585,12 @@ playKit.castingURL(format: .HLS){ (mediaURL: URL?) in
 }
 ```
 Media format is either `.HLS` or `.MP4` - Defaults to HLS
+
+You can also pass details of any valid media to playkit to return a valid casting URL without sending the media to the player to play:
+
+``` Swift
+playKit.castingURL(server: String, partnerID: Int, entryID: String, ks: String? = nil, format: AMGMediaFormat = .HLS, completion: @escaping ((URL?) -> Void))
+```
 
 ### Serving Adverts
 
@@ -607,6 +619,13 @@ amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.9
+- Added Youbora analytics and the ability to choose analytics services
+- Added ability to change scrub bar colours
+- Automatically detect live streams
+- Tidied Custom Control builder
+- Small bug fixes
 
 ### 0.8.3 - Standard UI updates
 - Change default visibility of start / end times to showing

@@ -8,6 +8,7 @@
 import UIKit
 import PlayKit
 import PlayKit_IMA
+import PlayKitYoubora
 import MediaPlayer
 import AVKit
 
@@ -64,6 +65,8 @@ import AVKit
     internal var pictureInPictureController: AVPictureInPictureController?
     internal var pipPossibleObservation: NSKeyValueObservation?
     
+    var analyticsConfiguration = AMGAnalyticsConfig()
+    
     // Casting properties
     
     //    internal var mediaInformation: GCKMediaInformation?
@@ -79,8 +82,18 @@ import AVKit
      */
     public override init(frame: CGRect){
         super.init(frame: frame)
-        createPlayer()
-        
+        createPlayer(analytics: nil)
+    }
+    
+    /**
+     Standard initialisation
+     
+     - Parameter frame: A CGRect describing the desired frame for the UIView. The Kaltura PlayKit will fill this view
+     - Returns: A UIView containing an instantiated instance of the Kaltura PlayKit
+     */
+    public init(frame: CGRect, analytics: AMGAnalyticsConfig? = nil){
+        super.init(frame: frame)
+        createPlayer(analytics: analytics)
     }
     
     /**
@@ -92,10 +105,10 @@ import AVKit
      
      Partner ID can also be sent separately or as part of media data when loading media
      */
-    public init(frame: CGRect, partnerID: Int){
+    public init(frame: CGRect, partnerID: Int, analytics: AMGAnalyticsConfig? = nil){
         super.init(frame: frame)
         self.partnerID = partnerID
-        createPlayer()
+        createPlayer(analytics: analytics)
     }
     
     required init?(coder: NSCoder) {
@@ -125,7 +138,15 @@ import AVKit
         AMGAnalyticsPlugin.setAnalyticsURL(url)
     }
     
-    public func createPlayer(){
+    /**
+     For Storyboard instantiation, this should be called manually
+     
+     - Parameter analytics: A valid AMGAnalyticsConfig object or 'nil' if no analytics is to be used
+     */
+    public func createPlayer(analytics: AMGAnalyticsConfig? = nil){
+        if let analyticsConfig = analytics {
+            analyticsConfiguration = analyticsConfig
+        }
         setNeedsLayout()
         layoutIfNeeded()
         constructPlayKit()
@@ -153,7 +174,17 @@ import AVKit
     
     func constructPlayKit() {
         PlayKitManager.shared.registerPlugin(IMAPlugin.self)
-        PlayKitManager.shared.registerPlugin(AMGAnalyticsPlugin.self)
+        switch analyticsConfiguration.analyticsService {
+        case .AMGANALYTICS:
+            PlayKitManager.shared.registerPlugin(AMGAnalyticsPlugin.self)
+            print("AMGANALYTICS - AMG Analytics registered")
+        case .YOUBORA:
+            PlayKitManager.shared.registerPlugin(YouboraPlugin.self)
+            print("AMGANALYTICS - Youbora registered")
+        default:
+            break
+        }
+       
         
         player = PlayKitManager.shared.loadPlayer(pluginConfig: createPluginConfig())
         player?.addObserver(self, events: [AdEvent.adStarted]) { event in
@@ -286,8 +317,31 @@ import AVKit
         return AMGAnalyticsPluginConfig(partnerId: partnerID)
     }
     
+    func createYouboraPlugin() -> AnalyticsConfig {
+        let youboraOptions: [String: Any] = [
+            "accountCode": analyticsConfiguration.accountCode
+        ]
+        return AnalyticsConfig(params: youboraOptions)
+    }
+    
     func createPluginConfig() -> PluginConfig? {
-        return nil // Analytics disabled until the backend is complete
+        
+        var config: [String: Any] = [:]
+        switch analyticsConfiguration.analyticsService {
+        case .AMGANALYTICS:
+            config[AMGAnalyticsPlugin.pluginName] = createAnalyticsPlugin()
+            print("AMGANALYTICS - AMG Analytics set up")
+        case .YOUBORA:
+            config[YouboraPlugin.pluginName] = createYouboraPlugin()
+            print("AMGANALYTICS - Youbora set up")
+        default:
+            break
+        }
+        
+        
+        
+        return PluginConfig(config: config)
+        // Analytics disabled until the backend is complete
         //return PluginConfig(config: [AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
         // return PluginConfig(config: [IMAPlugin.pluginName: getIMAPluginConfig(adTagUrl: ""), AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
     }
@@ -298,13 +352,36 @@ import AVKit
         }
     }
     
+    //    public func isLive() -> Bool {
+    //        return player.isLive()
+    //    }
+    
     private func loadMedia(media: MediaItem, mediaType: AMGMediaType){
         currentMedia = media
         currentMediaType = mediaType
         if partnerID > 0{
-            player?.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: createPluginConfig() as Any)
-            player?.prepare(media.media())
-            player?.play()
+            if let player = player {
+                player.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: createPluginConfig() as Any)
+                player.prepare(media.media())
+                if mediaType == .Live{
+                    self.currentMediaType = .Live
+                    self.controlUI?.setIsLive()
+                } else {
+                    isLive(){response in
+                        DispatchQueue.main.async {
+                            if response {
+                                self.currentMediaType = .Live
+                                self.controlUI?.setIsLive()
+                            } else {
+                                self.currentMediaType = .VOD
+                                self.controlUI?.setIsVOD()
+                            }
+                        }
+                    }
+                }
+                
+                player.play()
+            }
         }
     }
     
@@ -326,6 +403,7 @@ import AVKit
             kalturaMediaType = .vod
             controlUI?.setIsVOD()
         }
+        
         if partnerID > 0{
             loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType)
         } else {
@@ -414,7 +492,7 @@ import AVKit
      */
     public func goLive() {
         if let duration = player?.duration {
-        player?.currentTime = duration - 1
+            player?.currentTime = duration - 1
         }
     }
     
@@ -500,7 +578,7 @@ import AVKit
         skipForwardTime = TimeInterval(duration / 1000)
     }
     
-
+    
     
     public func playerLayer() -> AVPlayerLayer? {
         return playerView?.layer as? AVPlayerLayer

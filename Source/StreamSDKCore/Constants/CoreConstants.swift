@@ -53,7 +53,7 @@ public enum StreamAMGQueryType: CaseIterable {
         case .EQUALS:
             return "is equal to"
         case .GREATERTHAN:
-            return "is greater to"
+            return "is greater than"
         case .GREATERTHANOREQUALTO:
             return "is greater than or equal to"
         case .LESSTHAN:

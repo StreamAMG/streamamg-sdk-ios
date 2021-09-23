@@ -353,21 +353,21 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         var scrubBarw: CGFloat = scrubBarBackW - 20
         
         if isLive {
-            trackTimeShowing = false
             liveButton.isHidden = false
-        } else {
-            liveButton.isHidden = true
-        }
-
-        if isLive {
+            startTime.isHidden = true
             scrubBarx = liveButton.frame.width + 5
             scrubBarw = scrubBarBackW - liveButton.frame.width - 10
         } else {
+            liveButton.isHidden = true
             if trackTimeShowing {
+                startTime.isHidden = false
 //                let endTimeX = scrubBarBackW - endTime.frame.width
 //                endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
                 scrubBarx = startTime.frame.width + 5
                 scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width - 10
+            } else {
+                
+                startTime.isHidden = true
             }
         }
         scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)

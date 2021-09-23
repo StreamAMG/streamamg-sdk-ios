@@ -82,6 +82,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 0.9 - PlayKit functional changes and bug fixes
+
 ### 0.8.3 - PlayKit minor updates
 
 ### 0.8.2 - PlayKit HLS casting update

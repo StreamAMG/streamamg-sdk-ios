@@ -82,7 +82,7 @@ extension AMGPlayKit: URLSessionTaskDelegate {
         var urlRequest = URLRequest(url: validURL)
         urlRequest.httpMethod = "GET"
         let request = session.dataTask(with: urlRequest) {data, response, error in
-            if let httpResponse = response as? HTTPURLResponse {
+            if (response as? HTTPURLResponse) != nil {
                 self.sendCastingURL(url: url)
             }
         }

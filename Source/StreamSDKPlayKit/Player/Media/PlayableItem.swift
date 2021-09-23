@@ -29,8 +29,6 @@ public extension PlayableItem {
         guard let serverURL = serverURL else {
             return nil
         }
-        //    return URL(string: "https://storage.googleapis.com/interactive-media-ads/media/bbb/1428000/playlist.m3u8")
-        //  return URL(string: "https://storage.googleapis.com/interactive-media-ads/media/bbb.m3u8")
    return URL(string:"\(serverURL)/p/\(partnerID)/sp/\(partnerID)00/playManifest/entryId/\(entryID)/format/applehttp/protocol/http/a.m3u8?ks=\(ks ?? "")")
     }
     
@@ -47,7 +45,7 @@ public extension PlayableItem {
     
     var mediaEntry: PKMediaEntry {
         let source = PKMediaSource(self.entryID, contentUrl: self.contentURL, drmData: self.drmParams, mediaFormat: .hls)
-        print("URL = \(contentURL)")
+        // print("URL = \(contentURL)")
         let mediaEntry = PKMediaEntry(self.entryID, sources: [source])
         mediaEntry.mediaType = mediaType
         return mediaEntry
