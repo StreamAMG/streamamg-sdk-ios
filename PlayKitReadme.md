@@ -450,7 +450,7 @@ public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, med
 ```
 for example:
 ``` Swift
-playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", mediaType: .Live)
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG")
 ```
 
 Or with a Partner ID
@@ -459,7 +459,7 @@ public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: St
 ```
 for example:
 ``` Swift
-playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", mediaType: .Live)
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG")
 ```
 
 If the media does not require a KSession token, this should be left as null
@@ -471,7 +471,7 @@ When sending media to the player, the mediaType defaults to VOD and will automat
 To force the player into 'live' mode, 'mediaType: .Live' should be passed to the player when sending media
 
 ``` Swift
-public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .Live)
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", mediaType: .Live)
 ```
 
 'AMGMediaType' is defined as:
