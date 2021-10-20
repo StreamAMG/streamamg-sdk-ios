@@ -185,12 +185,12 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         var error: Unmanaged<CFError>?
         CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error)
-        print(error ?? "Successfully registered font: Spartan font")
+//        print(error ?? "Successfully registered font: Spartan font")
         
-        for family in UIFont.familyNames.sorted() {
-            let names = UIFont.fontNames(forFamilyName: family)
-            print("Family: \(family) Font names: \(names)")
-        }
+//        for family in UIFont.familyNames.sorted() {
+//            let names = UIFont.fontNames(forFamilyName: family)
+//            print("Family: \(family) Font names: \(names)")
+//        }
         
         if let customImage = configModel.playImage, let myImage = UIImage(named: customImage) {
         playImage = myImage

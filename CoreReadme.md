@@ -147,6 +147,6 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
-### 0.2 -> 0.9 - No changes to Core
+### 0.2 - No changes to Core
 
 ### 0.1 - Initial build

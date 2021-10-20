@@ -117,7 +117,7 @@ public class AMGControlBuilder {
 //        self.isLiveImage = image
 //        return self
 //    }
-//    
+//
 //    /**
 //    Specify the image to use for the logo / watermark
 //     */

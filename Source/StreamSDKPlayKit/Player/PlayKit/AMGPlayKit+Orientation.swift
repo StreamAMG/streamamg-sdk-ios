@@ -11,15 +11,15 @@ import UIKit
 
 extension AMGPlayKit {
     
-    override public var frame: CGRect {
+    override public var bounds: CGRect {
         didSet {
             resizeScreen()
         }
     }
     
     func resizeScreen(){
-        playerView?.frame = self.bounds //CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
-        controlUI?.frame = self.bounds //CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
+        playerView?.frame = self.bounds
+        controlUI?.frame = self.bounds
         controlUI?.resize()
     }
     

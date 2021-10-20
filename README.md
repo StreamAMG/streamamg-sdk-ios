@@ -25,6 +25,14 @@ PlayKit:
    PlayKit provides video playback for Stream AMG clients
    [Full details](PlayKitReadme.md)
 
+PlayKit2Go:
+   Provides download and offline video playback for PlayKit
+   [Full details](PlayKit2GoReadme.md)
+
+Purchases:
+   Provides an IAP wrapper and CloudPay integration for Stream AMG clients
+   [Full details](PurchasesReadme.md)
+
 Requirements
 ----------------
 
@@ -81,12 +89,7 @@ Change Log:
 ---------------
 
 All notable changes to this project will be documented in this section.
-
-### 0.9 - PlayKit functional changes and bug fixes
-
-### 0.8.3 - PlayKit minor updates
-
-### 0.8.2 - PlayKit HLS casting update
+### 0.10 - Purcases and PlayKit2Go modules added
 
 ### 0.8.1 - PlayKit Update to CastingURL function
 
