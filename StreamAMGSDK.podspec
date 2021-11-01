@@ -2,12 +2,12 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "StreamAMGSDK"
-  spec.version      = "0.10"
+  spec.version      = "0.10.1"
   spec.summary      = "Stream AMG SDK"
   spec.swift_versions = "5"
 
   spec.description  = <<-DESC
-  Core dependency for the Stream AMG SDK. Includes CloudMatrix, StreamPlay, Authentication and AMGPlayKit
+  Core dependency for the Stream AMG SDK. Includes CloudMatrix, StreamPlay, Authentication, Purchases, PlayKit and PlayKit2Go
                    DESC
 
   spec.homepage     = "https://github.com/StreamAMG/StreamAMGSDK-iOS"

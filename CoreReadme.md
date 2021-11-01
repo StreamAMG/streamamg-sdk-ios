@@ -132,21 +132,11 @@ let queue = StreamSDKBatchJob()
 The batch job can be fired as many times as required once created, but will not allow a restart until any running batch has completed
 
 
-
-
-##Jazzy documentation
-To run Jazzy documentation on this module, ensure Jazzy is installed, details [here](https://github.com/realm/jazzy)
-
-From a terminal prompt, navigate to the StreamSDKCore folder and enter the command:
-```
-jazzy
-```
-
 Change Log:
 ===========
 
 All notable changes to this project will be documented in this section.
 
-### 0.2 - No changes to Core
+### 0.2 -> 0.10 - No changes to Core
 
 ### 0.1 - Initial build

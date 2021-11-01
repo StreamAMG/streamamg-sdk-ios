@@ -67,6 +67,8 @@ import AVKit
     
     var analyticsConfiguration = AMGAnalyticsConfig()
     
+    private var currentAdvert = ""
+    
     // Casting properties
     
     //    internal var mediaInformation: GCKMediaInformation?
@@ -338,6 +340,7 @@ import AVKit
             break
         }
         
+        config[IMAPlugin.pluginName] = getIMAPluginConfig()
         
         
         return PluginConfig(config: config)
@@ -449,14 +452,17 @@ import AVKit
     public func setSpoilerFree(enabled: Bool) {
         controlUI?.setSpoilerFree(enabled)
     }
-    
+
     public func serveAdvert(adTagUrl: String){
-        self.player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: getIMAPluginConfig(adTagUrl: adTagUrl))
+        currentAdvert = adTagUrl
+    self.player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: getIMAPluginConfig())
     }
     
-    private func getIMAPluginConfig(adTagUrl: String) -> IMAConfig {
+    private func getIMAPluginConfig() -> IMAConfig {
         let adsConfig = IMAConfig()
-        adsConfig.set(adTagUrl: adTagUrl)
+        if !currentAdvert.isEmpty {
+        adsConfig.set(adTagUrl: currentAdvert)
+        }
         return adsConfig
     }
     

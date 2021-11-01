@@ -143,19 +143,11 @@ auth.getKS(entryID: "0_validEntryID") { (result: Result<(SAKSResult, String), St
 }
 ```
 
-##Jazzy documentation
-To run Jazzy documentation on this module, ensure Jazzy is installed, details [here](https://github.com/realm/jazzy)
-
-From a terminal prompt, navigate to the StreamSDKCloudMatrix folder and enter the command:
-```
-jazzy --podspec ../CloudMatrixJazzy.podspec
-```
-
 Change Log:
 ===========
 
 All notable changes to this project will be documented in this section.
 
-### 0.2 - No changes to Authentication
+### 0.2 -> 0.10 - No changes to Authentication
 
 ### 0.1 - Initial build
