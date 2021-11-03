@@ -25,14 +25,26 @@ extension AMGPlayKit {
         controlUI?.showControls(false)
         skipForwardTime = TimeInterval(controlConfig.skipForwardTime) / 1000
         skipBackwardTime = TimeInterval(controlConfig.skipBackwardTime) / 1000
-        let tap = UITapGestureRecognizer(target: self, action: #selector(self.bringControlToForeground(_:)))
         controlUI?.isUserInteractionEnabled = true
-        self.addGestureRecognizer(tap)
+        enableTap()
        addSubview(controlUI!)
     }
     
+    func enableTap() {
+        if let tap = tap {
+        self.addGestureRecognizer(tap)
+            controlUI?.isUserInteractionEnabled = true
+        }
+    }
+    
+    func disableTap() {
+        if let tap = tap {
+        self.removeGestureRecognizer(tap)
+            controlUI?.isUserInteractionEnabled = false
+        }
+    }
+    
     @objc func bringControlToForeground(_ sender: UITapGestureRecognizer) {
-        //controlUI?.alpha = 1.0
         controlUI?.showControls(true)
         startControlVisibilityTimer()
     }
@@ -64,8 +76,6 @@ extension AMGPlayKit {
     }
     
     @objc func hideControls(){
-        print("Hiding controls")
-       //controlUI?.alpha = 0.0
         controlUI?.showControls(false)
     }
     

@@ -122,8 +122,8 @@ The PlayKitDownloadItem model is a summary of everything that PlayKit2Go stores 
 ``` Swift
     var entryID: String = "",
     var completedFraction: Float = 0.0f, // As a Float from 0 (not started) to 1 (completed)
-    var totalSize: Long = 0, // - Not currently implemented
-    var currentDownloadedSize: Long = 0, // - Not currently implemented
+    var totalSize: Int64 = 0, // Total estimated size of file in bytes
+    var currentDownloadedSize: Int64 = 0, // Current size of download in bytes
     var available: Boolean = false,
     var error: PlayKit2GoError? = null
 ```
@@ -185,6 +185,11 @@ Change Log:
 ===========
 
 All notable changes to this project will be documented in this section.
+
+### 0.11 
+    - Updated Download model to iclude file size information
+    - Added Download Model convenience methods for file size and percentage
+    - Resolved an issue where scrub bar colours were not being updated for local media
 
 ### 0.10 - PlayKit2Go Module added to SDK
 

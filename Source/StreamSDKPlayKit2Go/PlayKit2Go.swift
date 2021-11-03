@@ -48,8 +48,6 @@ public class PlayKit2Go: ContentManagerDelegate {
                             print("No media source")
                             return
                         }
-                
-                print("Selected to download: \(String(describing: mediaSource.contentUrl))")
                 item = try cm.addItem(id: mediaItem.id, url: mediaSource.contentUrl!)
             }
         } catch {
@@ -74,28 +72,27 @@ public class PlayKit2Go: ContentManagerDelegate {
                     .setAllAudioLanguages()
                 options.allowInefficientCodecs = true
                 try self.cm.loadItemMetadata(id: entryID, options: options)
-                print("Item Metadata Loaded")
                 
             } catch {
                 DispatchQueue.main.async {
                     if let error = error as? DTGError {
                         switch error {
                         case .itemNotFound( _):
-                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Item_Not_Found))
+                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Item_Not_Found))
                         case .invalidState( _):
-                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Already_Queued_Or_Completed))
+                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Already_Queued_Or_Completed))
                         default:
-                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Unknown_Error))
+                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Unknown_Error))
                         }
                     } else if let error = error as? DownloadToGo.HLSLocalizerError {
                         switch error {
                         case .unknownPlaylistType:
-                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Download_Error))
+                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Download_Error))
                         
                         case .malformedPlaylist:
-                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Download_Error))
+                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Download_Error))
                         case .invalidState:
-                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Already_Queued_Or_Completed))
+                            self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Already_Queued_Or_Completed))
                         }
                         
                     } else {
@@ -151,7 +148,7 @@ public class PlayKit2Go: ContentManagerDelegate {
             if let testURL = URL(string: path), fileManager.fileExists(atPath: testURL.path){
             return url
             } else {
-                self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, error: .Item_Not_Found))
+                self.delegate?.downloadDidError(item: PlayKitDownloadItem(entryID: entryID, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: .Item_Not_Found))
             }
         } catch {
             print("Error returning URL for \(entryID)")
@@ -161,12 +158,10 @@ public class PlayKit2Go: ContentManagerDelegate {
     }
     
     public func item(id: String, didDownloadData totalBytesDownloaded: Int64, totalBytesEstimated: Int64?, completedFraction: Float) {
-       // print("Item: \(id) downloaded \(completedFraction * 100)%")
-        delegate?.downloadDidUpdate(item: PlayKitDownloadItem(entryID: id, completedFraction: completedFraction, available: false, error: nil))
+        delegate?.downloadDidUpdate(item: PlayKitDownloadItem(entryID: id, completedFraction: completedFraction, available: false, totalSize: totalBytesEstimated ?? totalBytesDownloaded, currentDownloadedSize: totalBytesDownloaded ?? totalBytesDownloaded, error: nil))
     }
     
     public func item(id: String, didChangeToState newState: DTGItemState, error: Error?) {
-        print("Item: \(id) changed to state \(newState.asString())")
         switch newState {
         case .metadataLoaded:
             do {
@@ -174,16 +169,16 @@ public class PlayKit2Go: ContentManagerDelegate {
             } catch {
             }
         case .completed:
-            delegate?.downloadDidComplete(item: PlayKitDownloadItem(entryID: id, completedFraction: 1, available: true, error: nil))
+            let dlSize = fetchAllStoredItems().downloadedForItem(entryID: id)
+            delegate?.downloadDidComplete(item: PlayKitDownloadItem(entryID: id, completedFraction: 1, available: true, totalSize: dlSize, currentDownloadedSize: dlSize, error: nil))
         default:
-            delegate?.downloadDidChangeStatus(item: PlayKitDownloadItem(entryID: id, completedFraction: 0, available: false, error: nil))
+            delegate?.downloadDidChangeStatus(item: PlayKitDownloadItem(entryID: id, completedFraction: 0, available: false, totalSize: 0, currentDownloadedSize: 0, error: nil))
             break
         }
         
         if let error = error {
             print("Item: \(id) errored: \(error.localizedDescription)")
         }
-      //  startItemsReady()
     }
     
     func startItemsReady() {
@@ -231,10 +226,14 @@ public class PlayKit2Go: ContentManagerDelegate {
                     myItem.completedFraction = 0
                 case .inProgress:
                     myItem.completedFraction = item.completedFraction
+                    myItem.currentDownloadedSize = item.downloadedSize
+                    myItem.totalSize = item.estimatedSize ?? item.downloadedSize
                 case .paused:
                     myItem.completedFraction = item.completedFraction
                 case .completed:
                     myItem.completedFraction = 1
+                    myItem.currentDownloadedSize = item.downloadedSize
+                    myItem.totalSize = item.downloadedSize
                     myItem.available = true
                 case .failed:
                     myItem.completedFraction = item.completedFraction

@@ -213,6 +213,6 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
-### 0.10 - Purchases Module added to SDK
+### 0.11 - Purchases Module added to SDK
 
 ### 0.1 -> 0.9 - No Purchases Module

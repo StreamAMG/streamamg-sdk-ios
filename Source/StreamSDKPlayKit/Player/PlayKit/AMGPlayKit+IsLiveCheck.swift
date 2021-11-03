@@ -14,7 +14,6 @@ extension AMGPlayKit {
                 completion(false)
                 return
         }
-            print("AMGLIVE: \(validURL.absoluteString)")
         let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
         var urlRequest = URLRequest(url: validURL)
         urlRequest.httpMethod = "POST"

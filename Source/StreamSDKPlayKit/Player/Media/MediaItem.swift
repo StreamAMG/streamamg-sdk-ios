@@ -17,8 +17,9 @@ class MediaItem: PlayableItem {
     var mediaType: MediaType = .vod
     var drmLicenseURI: String? = nil
     var drmFPSCertificate: String? = nil
+    var mediaTitle: String? = nil
     
-    init(serverUrl: String, partnerId: Int, entryId: String,ks: String? = nil, mediaType: MediaType = .vod, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil) {
+    init(serverUrl: String, partnerId: Int, entryId: String,ks: String? = nil, title: String? = nil, mediaType: MediaType = .vod, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil) {
         self.serverURL = URL(string: serverUrl) ?? nil
         self.partnerID = partnerId
         self.entryID = entryId
@@ -26,6 +27,7 @@ class MediaItem: PlayableItem {
         self.mediaType = mediaType
         self.drmLicenseURI = drmLicenseURI
         self.drmFPSCertificate = drmFPSCertificate
+        self.mediaTitle = title
     }
     
     func media() -> MediaConfig {

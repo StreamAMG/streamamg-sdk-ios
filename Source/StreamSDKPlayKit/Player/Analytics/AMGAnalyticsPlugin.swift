@@ -206,13 +206,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                     self.sendEvent(event: event)
                 }
             default:
-//                self.messageBus?.addObserver(self, events: [event.self]) { [weak self] event in
-//                    guard let self = self else { return }
-//                    self.sendEvent(event: event)
-//                    print("Event: \(event)")
-//                }
             break
-            //default: assertionFailure("plugin \(type(of:self)) all events must be handled")
             }
         }
 
@@ -234,7 +228,6 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
     
     func sendEvent(event: PKEvent, eventID: Int = 0) {
         do {
- //           print("**** \(event) ****")
             try self.sendRequest(eventID: eventID)
         } catch {
             print("**** ERROR ****")
@@ -287,7 +280,6 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                 switch amgResponse {
                 case .success(let sessionID):
                     self?.sessionID = sessionID
-            //        print("Analytics request sent!")
                 case .failure(let errorMessage):
                     print("Analytics request failed: \(String(describing: errorMessage))")
                 }
@@ -295,9 +287,6 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
             
         }
         let builtRequest = requestBuilder.build()
-        
-        print("*** URL *** \(builtRequest.url)")
- //       print("*** BODY *** \(String(describing: String(data: builtRequest.dataBody ?? Data(), encoding: .utf8)))")
         KNKRequestExecutor.shared.send(request: builtRequest)
     }
     

@@ -17,12 +17,52 @@ public struct PlayKitDownloads {
     public var removed: [PlayKitDownloadItem] = []
 
     
+    public func percentageForItem(entryID: String) -> Float {
+        if let item = completed.first(where: {$0.entryID == entryID}) {
+            return 100
+        }
+        if let item = downloading.first(where: {$0.entryID == entryID}) {
+            return item.percentageComplete()
+        }
+        if let item = paused.first(where: {$0.entryID == entryID}) {
+            return item.percentageComplete()
+        }
+        if let item = new.first(where: {$0.entryID == entryID}) {
+            return 0
+        }
+        if let item = metadataLoaded.first(where: {$0.entryID == entryID}) {
+            return 0
+        }
+        return -1
+    }
+    
+    
+    public func downloadedForItem(entryID: String) -> Int64 {
+        if let item = completed.first(where: {$0.entryID == entryID}) {
+            return item.currentDownloadedSize
+        }
+        if let item = downloading.first(where: {$0.entryID == entryID}) {
+            return item.currentDownloadedSize
+        }
+        if let item = paused.first(where: {$0.entryID == entryID}) {
+            return item.currentDownloadedSize
+        }
+        if new.first(where: {$0.entryID == entryID}) != nil {
+            return 0
+        }
+        if metadataLoaded.first(where: {$0.entryID == entryID}) != nil {
+            return 0
+        }
+        return -1
+    }
 }
 
 public struct PlayKitDownloadItem {
     public var entryID: String = ""
     public var completedFraction: Float = 0
     public var available: Bool = false
+    public var totalSize: Int64 = 0
+    public var currentDownloadedSize: Int64 = 0
     public var error: PlayKit2GoError? = nil
     
     public func percentageComplete() -> Float {

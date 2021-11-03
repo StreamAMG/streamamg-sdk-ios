@@ -102,6 +102,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 0.11 - Updates to PlayKit2Go and PlayKit
+
 ### 0.10 - Purchases and PlayKit2Go SDKs added
 
 ### 0.9 - PlayKit functional changes and bug fixes

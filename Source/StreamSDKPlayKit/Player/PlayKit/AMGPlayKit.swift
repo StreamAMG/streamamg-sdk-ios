@@ -69,6 +69,10 @@ import AVKit
     
     private var currentAdvert = ""
     
+   // var adIsPlaying = false
+    
+    var tap: UITapGestureRecognizer? = nil
+    
     // Casting properties
     
     //    internal var mediaInformation: GCKMediaInformation?
@@ -146,6 +150,7 @@ import AVKit
      - Parameter analytics: A valid AMGAnalyticsConfig object or 'nil' if no analytics is to be used
      */
     public func createPlayer(analytics: AMGAnalyticsConfig? = nil){
+        tap = UITapGestureRecognizer(target: self, action: #selector(self.bringControlToForeground(_:)))
         if let analyticsConfig = analytics {
             analyticsConfiguration = analyticsConfig
         }
@@ -179,10 +184,8 @@ import AVKit
         switch analyticsConfiguration.analyticsService {
         case .AMGANALYTICS:
             PlayKitManager.shared.registerPlugin(AMGAnalyticsPlugin.self)
-            print("AMGANALYTICS - AMG Analytics registered")
         case .YOUBORA:
             PlayKitManager.shared.registerPlugin(YouboraPlugin.self)
-            print("AMGANALYTICS - Youbora registered")
         default:
             break
         }
@@ -190,16 +193,16 @@ import AVKit
         
         player = PlayKitManager.shared.loadPlayer(pluginConfig: createPluginConfig())
         player?.addObserver(self, events: [AdEvent.adStarted]) { event in
-            if let info = event.adInfo {
-                // use ad info
-                switch info.positionType {
-                case .preRoll: print("Pre-roll")
-                case .midRoll: print("Mid-roll")
-                case .postRoll: print("Post-roll")
-                }
-            } else {
-                print("Ad event: \(event.description)")
-            }
+        //    self.adIsPlaying = true
+            self.disableTap()
+        }
+        player?.addObserver(self, events: [AdEvent.adComplete]) { event in
+        //    self.adIsPlaying = false
+            self.enableTap()
+        }
+        player?.addObserver(self, events: [AdEvent.adSkipped]) { event in
+        //    self.adIsPlaying = false
+            self.enableTap()
         }
         self.player?.addObserver(self, events: [PlayerEvent.error]) { event in
             var knownError = false
@@ -320,10 +323,22 @@ import AVKit
     }
     
     func createYouboraPlugin() -> AnalyticsConfig {
-        let youboraOptions: [String: Any] = [
+        var youboraOptions: [String: Any] = [
             "accountCode": analyticsConfiguration.accountCode
         ]
-        return AnalyticsConfig(params: youboraOptions)
+        
+        if let name = analyticsConfiguration.userName {
+            youboraOptions["username"] = name
+        }
+        if !analyticsConfiguration.youboraParameters.isEmpty {
+            var extraParams: [String: Any] = [:]
+            analyticsConfiguration.youboraParameters.forEach {param in
+                extraParams["param\(param.id)"] = param.value
+            }
+            youboraOptions["extraParams"] = extraParams
+        }
+        
+        return AnalyticsConfig(params: youboraOptions) //config  //
     }
     
     func createPluginConfig() -> PluginConfig? {
@@ -332,10 +347,8 @@ import AVKit
         switch analyticsConfiguration.analyticsService {
         case .AMGANALYTICS:
             config[AMGAnalyticsPlugin.pluginName] = createAnalyticsPlugin()
-            print("AMGANALYTICS - AMG Analytics set up")
         case .YOUBORA:
             config[YouboraPlugin.pluginName] = createYouboraPlugin()
-            print("AMGANALYTICS - Youbora set up")
         default:
             break
         }
@@ -396,7 +409,7 @@ import AVKit
      - entryID: The unique ID for the media item, as specified by StreamAMG
      - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
-    public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+    public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, title: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
         var kalturaMediaType: MediaType = .vod
         switch mediaType {
         case .Live, .Live_Audio:
@@ -408,7 +421,7 @@ import AVKit
         }
         
         if partnerID > 0{
-            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType)
+            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType)
         } else {
             print("Please provide a PartnerID with the request, add a default with 'addPartnerID(partnerID:Int)' or set a default in the initialiser")
         }
@@ -423,9 +436,9 @@ import AVKit
      - entryID: The unique ID for the media item, as specified by StreamAMG
      - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
-    public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+    public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, title: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
         self.partnerID = partnerID
-        loadMedia(serverUrl: serverUrl, entryID: entryID, ks: ks, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate)
+        loadMedia(serverUrl: serverUrl, entryID: entryID, ks: ks, title: title, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate)
     }
     
     // IMA

@@ -90,7 +90,6 @@ extension AMGPlayKit: URLSessionTaskDelegate {
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-        print("Redirection response: \(response)")
         if let location = response.allHeaderFields["Location"] as? String {
             sendCastingURL(url: location)
         } else {

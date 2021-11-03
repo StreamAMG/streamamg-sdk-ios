@@ -1,4 +1,4 @@
-#  AMG PlayKit Library
+#  StreamSDK PlayKit Module
 
 The AMG PlayKit library is a simple to use wrapper around the Kaltura PlayKit suite. It provides a single UIView (AMGPlayKit) with which to play and interact with standard AMG provided media streams, whilst automatically taking care of media analytics, Google IMA (media advertising) and basic player UI.
 
@@ -82,6 +82,21 @@ init(amgAnalyticsPartnerID: Int)
 ```
 
 If you do not pass an analytics configuration during initialisation, no analytics service will be used
+
+Youbora analytics can handle up to 20 extra static parameters being passed to it. To do this, you should use the YouboraService builder class:
+
+``` Swift
+        let analyticsConfig = AMGAnalyticsConfig.YouboraService()
+            .accountCode("streamamgdev") // REQUIRED
+            .userName("A USER CODE") // Should be non identifying
+            .parameter(1, value: "Static Parameter Value 1")
+            .parameter(2, value: "Static Parameter Value 2")
+            .parameter(3, value: "Static Parameter Value 3") // through to 20
+            .build()
+        amgPlayKit = AMGPlayKit(frame: playKitView.bounds, analytics: analyticsConfig)
+```
+
+If you do not pass an account code in this instance, the configuration file will not work
 
 ### Manually updating the PartnerID
 
@@ -433,11 +448,12 @@ playKit.minimise()
 
 The main function of PlayKit is to play and interact with media provided by Stream AMG and it's partners.
 
-There are only 4 required elements when requesting media to be played:
+There are only 5 required elements when requesting media to be played:
 * Partner ID
 * Media URL
 * Entry ID
 * KS (where needed)
+* Title (For Youbora analytics)
 
 you can also pass a 'mediaType' element to force the player into 'live' mode if required - see below
 
@@ -446,20 +462,20 @@ Please note it is no longer required to pass the UIConfig parameter to PlayKit.
 If you have provided the Partner ID to the PlayKit already, you do not need to pass this with each media request:
 
 ``` Swift
-public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD)
+public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, title: String?)
 ```
 for example:
 ``` Swift
-playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG")
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", title: String?)
 ```
 
 Or with a Partner ID
 ``` Swift
-public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD)
+public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, title: String?)
 ```
 for example:
 ``` Swift
-playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG")
+playKit.loadMedia(serverUrl: "https://mymediaserver.com", partnerID: 111111111, entryId: "0_myEntryID", ks: "VALID_KS_PROVIDED_BY_STREAM_AMG", title: String?)
 ```
 
 If the media does not require a KSession token, this should be left as null
@@ -619,6 +635,13 @@ amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 0.11
+- Added Youbora parameters and builder methods
+- Corrected issues with the standard UI
+- Fixed a bug where adverts were not showing
+- Fixed a bug where adverts would not allow interaction when using the standard UI
+- Removed debug logging
 
 ### 0.10 - Minor changes for PlayKit2Go implementation
 

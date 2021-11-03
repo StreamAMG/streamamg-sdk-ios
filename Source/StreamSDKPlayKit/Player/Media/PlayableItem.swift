@@ -15,6 +15,7 @@ public protocol PlayableItem {
     var entryID: String { get }
     var ks: String? { get }
     var mediaType: MediaType { get }
+    var mediaTitle: String? { get }
     
     var drmLicenseURI: String? { get }
     var drmFPSCertificate: String? { get }
@@ -45,9 +46,9 @@ public extension PlayableItem {
     
     var mediaEntry: PKMediaEntry {
         let source = PKMediaSource(self.entryID, contentUrl: self.contentURL, drmData: self.drmParams, mediaFormat: .hls)
-        // print("URL = \(contentURL)")
         let mediaEntry = PKMediaEntry(self.entryID, sources: [source])
         mediaEntry.mediaType = mediaType
+        mediaEntry.name = self.mediaTitle
         return mediaEntry
     }
     

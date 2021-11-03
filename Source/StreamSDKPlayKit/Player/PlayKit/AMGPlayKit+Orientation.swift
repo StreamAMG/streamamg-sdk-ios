@@ -17,6 +17,12 @@ extension AMGPlayKit {
         }
     }
     
+    override public var frame: CGRect {
+        didSet {
+            resizeScreen()
+        }
+    }
+    
     func resizeScreen(){
         playerView?.frame = self.bounds
         controlUI?.frame = self.bounds

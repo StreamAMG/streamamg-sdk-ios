@@ -185,12 +185,6 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         var error: Unmanaged<CFError>?
         CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, &error)
-//        print(error ?? "Successfully registered font: Spartan font")
-        
-//        for family in UIFont.familyNames.sorted() {
-//            let names = UIFont.fontNames(forFamilyName: family)
-//            print("Family: \(family) Font names: \(names)")
-//        }
         
         if let customImage = configModel.playImage, let myImage = UIImage(named: customImage) {
         playImage = myImage
@@ -251,14 +245,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         let scrubBarBackY = h-65
         let scrubBarBackX = CGFloat(20)
         let scrubBarBackW = w-40
-        let scrubBarBackH = CGFloat(40)
+        let scrubBarBackH = CGFloat(60)
         
         scrubBarBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
         //scrubBarBackground.layer.cornerRadius = 10
         //scrubBarBackground.backgroundColor = UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7) //UIColor.clear //
         mainView.addSubview(scrubBarBackground)
         
-        spoilerFreeBackground = UIView(frame: CGRect(x: scrubBarBackX + 20, y: scrubBarBackY, width: scrubBarBackW - 20, height: scrubBarBackH))
+        spoilerFreeBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
         //scrubBarBackground.layer.cornerRadius = 10
         spoilerFreeBackground.backgroundColor = UIColor.clear //UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
         mainView.addSubview(spoilerFreeBackground)
@@ -289,8 +283,8 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         spoilerFreeBackground.addSubview(spoilerFreeRightView)
         
         
-        var scrubBarx: CGFloat = 20
-        var scrubBarw: CGFloat = scrubBarBackW-40
+        var scrubBarx: CGFloat = 10
+        var scrubBarw: CGFloat = scrubBarBackW-20
         
         if configModel.trackTimeShowing {
             startTime = timeLabel()
@@ -300,14 +294,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 //            endTime.textAlignment = .left
             scrubBarBackground.addSubview(startTime)
 //            scrubBarBackground.addSubview(endTime)
-            scrubBarx = startTime.frame.width
-            scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width
+          //  scrubBarx = startTime.frame.width
+          //  scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width
             trackTimeShowing = true
         } else {
             trackTimeShowing = false
         }
 
-        scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
+        scrubBar.frame = CGRect(x: scrubBarx, y: 5, width: scrubBarw, height: 20)
         scrubBar.minimumValue = 0
         scrubBar.maximumValue = 100
         scrubBar.addTarget(self, action: #selector(sliderMoved(_:)), for: .allEvents)
@@ -319,14 +313,15 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         scrubBarBackground.addSubview(scrubBar)
         
         let dummyLiveText = UITextView(frame: CGRect(x: 0,y: 0,width: CGFloat.greatestFiniteMagnitude, height: 20))
-        dummyLiveText.font = UIFont(name: "LeagueSpartan-Bold", size: 8)
+        dummyLiveText.font = UIFont(name: "LeagueSpartan-Bold", size: 12)
         dummyLiveText.text = "GO LIVE"
         dummyLiveText.sizeToFit()
-        liveButton.titleLabel?.font = UIFont(name: "LeagueSpartan-Bold", size: 8) //.systemFont(ofSize: 12)
+        liveButton.titleLabel?.font = UIFont(name: "LeagueSpartan-Bold", size: 12) //.systemFont(ofSize: 12)
         liveButton.setTitleColor(.white, for: .normal)
         liveButton.setTitle("GO LIVE", for: .normal)
-        liveButton.frame = CGRect(x: 0, y: 10, width: dummyLiveText.frame.width + 10, height: 20)
+        liveButton.frame = CGRect(x: 10, y: 30, width: dummyLiveText.frame.width, height: 20)
         liveButton.addTarget(self, action: #selector(goLive), for: .touchUpInside)
+        liveButton.titleLabel?.textAlignment = .left
         scrubBarBackground.addSubview(liveButton)
 
         
@@ -355,16 +350,16 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         if isLive {
             liveButton.isHidden = false
             startTime.isHidden = true
-            scrubBarx = liveButton.frame.width + 5
-            scrubBarw = scrubBarBackW - liveButton.frame.width - 10
+//            scrubBarx = liveButton.frame.width + 5
+//            scrubBarw = scrubBarBackW - liveButton.frame.width - 10
         } else {
             liveButton.isHidden = true
             if trackTimeShowing {
                 startTime.isHidden = false
 //                let endTimeX = scrubBarBackW - endTime.frame.width
 //                endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
-                scrubBarx = startTime.frame.width + 5
-                scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width - 10
+//                scrubBarx = startTime.frame.width + 5
+//                scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width - 10
             } else {
                 
                 startTime.isHidden = true
@@ -392,17 +387,10 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
 
     private func timeLabel() -> UILabel {
-        let x = CGFloat(0)
-        let y = CGFloat(0)
-        let label = UILabel(frame: CGRect(x: x, y: y, width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude))
-        label.font = UIFont(name: "LeagueSpartan-Bold", size: 8)  //.systemFont(ofSize: 8)
+        let label = UILabel(frame: CGRect(x: 10, y: 35, width: 200, height: 20))
+        label.font = UIFont(name: "LeagueSpartan-Bold", size: 12)  //.systemFont(ofSize: 8)
         label.textColor = .white
-        label.text = "00:00:00/00:00:00"
-        label.sizeToFit()
-        //label.backgroundColor = UIColor.red
-        let labelY: CGFloat = (40 - label.frame.height) / 2
-        label.frame = CGRect(x: x, y: labelY, width: label.frame.width, height: label.frame.height)
-        label.textAlignment = .center
+        label.textAlignment = .left
         label.text = ""
         return label
     }
@@ -567,14 +555,19 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         forwardButton.frame = CGRect(x: x + playPauseSize + 20, y: skipY, width: skipSize, height: skipSize)
 
+//        let scrubBarBackY = h-65
+//        let scrubBarBackX = CGFloat(20)
+//        let scrubBarBackW = w-40
+//        let scrubBarBackH = CGFloat(40)
+        
         let scrubBarBackY = h-65
         let scrubBarBackX = CGFloat(20)
         let scrubBarBackW = w-40
-        let scrubBarBackH = CGFloat(40)
+        let scrubBarBackH = CGFloat(60)
         
         scrubBarBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
       //  scrubBarBackground.backgroundColor = UIColor.red
-        spoilerFreeBackground.frame = CGRect(x: scrubBarBackX + 20, y: scrubBarBackY, width: scrubBarBackW - 20, height: scrubBarBackH)
+        spoilerFreeBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
         
 
     
