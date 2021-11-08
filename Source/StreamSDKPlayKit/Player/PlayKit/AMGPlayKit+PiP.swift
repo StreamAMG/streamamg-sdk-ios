@@ -66,7 +66,9 @@ extension AMGPlayKit: AVPictureInPictureControllerDelegate {
     
     @objc internal func enterBackground(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            if let pip = self.pictureInPictureController, pip.isPictureInPictureActive {
         self.player.play()
+            }
         }
     }
 }

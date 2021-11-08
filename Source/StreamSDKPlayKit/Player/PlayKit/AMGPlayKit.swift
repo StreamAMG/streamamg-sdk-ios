@@ -362,6 +362,29 @@ import AVKit
         // return PluginConfig(config: [IMAPlugin.pluginName: getIMAPluginConfig(adTagUrl: ""), AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
     }
     
+    func updatePluginConfig() {
+        
+       // var config: [String: Any] = [:]
+        switch analyticsConfiguration.analyticsService {
+        case .AMGANALYTICS:
+       //     config[AMGAnalyticsPlugin.pluginName] = createAnalyticsPlugin()
+        //    config[IMAPlugin.pluginName] = getIMAPluginConfig()
+            player.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: getIMAPluginConfig()) //PluginConfig(config: config))
+        case .YOUBORA:
+         //   config[YouboraPlugin.pluginName] = createYouboraPlugin()
+           // config[IMAPlugin.pluginName] = getIMAPluginConfig()
+            player.updatePluginConfig(pluginName: YouboraPlugin.pluginName, config: createYouboraPlugin())//PluginConfig(config: config))
+        default:
+            break
+        }
+        
+        var imaconfig: [String: Any] = [:]
+        imaconfig[IMAPlugin.pluginName] = getIMAPluginConfig()
+        player.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: PluginConfig(config: imaconfig))
+        
+        return
+    }
+    
     private func loadCurrentMedia() {
         if let media = currentMedia {
             loadMedia(media: media, mediaType: currentMediaType)
@@ -377,7 +400,7 @@ import AVKit
         currentMediaType = mediaType
         if partnerID > 0{
             if let player = player {
-                player.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: createPluginConfig() as Any)
+                updatePluginConfig()
                 player.prepare(media.media())
                 if mediaType == .Live{
                     self.currentMediaType = .Live
@@ -601,5 +624,13 @@ import AVKit
     
     public func playerLayer() -> AVPlayerLayer? {
         return playerView?.layer as? AVPlayerLayer
+    }
+    
+    public func updateYouboraUserID(_ name: String) {
+        analyticsConfiguration.userName = name
+    }
+    
+    public func updateYouboraParameter(id: Int, value: String) {
+        analyticsConfiguration.updateYouboraParameter(id: id, value: value)
     }
 }

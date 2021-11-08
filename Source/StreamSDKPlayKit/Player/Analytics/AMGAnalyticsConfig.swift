@@ -28,6 +28,14 @@ public class AMGAnalyticsConfig {
         partnerID = amgAnalyticsPartnerID
     }
     
+    internal func updateYouboraParameter(id: Int, value: String){
+        
+        if let param = youboraParameters.firstIndex(where: {$0.id == id}), param < youboraParameters.count {
+            youboraParameters.remove(at: param)
+            }
+            youboraParameters.append(YouboraParameter(id: id, value: value))
+    }
+    
     public class YouboraService {
         var youboraParametersObject: [YouboraParameter] = []
         var accountCodeObject: String = ""

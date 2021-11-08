@@ -9,5 +9,5 @@ import Foundation
 
 internal struct YouboraParameter {
     let id: Int
-    let value: String
+    var value: String
 }

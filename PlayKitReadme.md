@@ -582,9 +582,6 @@ You can also implement PiP in app, by accessing the required AVPlayerLayer:
 playKit.playerLayer()
 ```
 
-#### Warning
-Currently PiP will pause a video when the app goes into background, this will be resolved, but for now, PiP should work fine.
-
 ### Casting URL
 
 To access the casting URL of the currently playing media use the following function:
