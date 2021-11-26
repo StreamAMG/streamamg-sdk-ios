@@ -186,11 +186,15 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.0 - Release
+
+### Beta releases
+
 ### 0.11 
-    - Updated Download model to iclude file size information
+    - Updated Download model to include file size information
     - Added Download Model convenience methods for file size and percentage
     - Resolved an issue where scrub bar colours were not being updated for local media
 
 ### 0.10 - PlayKit2Go Module added to SDK
 
-### 0.1 -> 0.9 - No Purchases Module
+### 0.1 -> 0.9 - No PlayKit2Go Module

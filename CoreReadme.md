@@ -137,6 +137,10 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.0 - Release
+
+### Beta releases
+
 ### 0.2 -> 0.11 - No changes to Core
 
 ### 0.1 - Initial build

@@ -633,6 +633,10 @@ amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false 
 
 All notable changes to this project will be documented in this section.
 
+### 1.0 - Release
+
+### Beta releases
+
 ### 0.11
 - Added Youbora parameters and builder methods
 - Corrected issues with the standard UI
