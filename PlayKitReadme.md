@@ -75,7 +75,7 @@ To use either service, you should instantiate the player with a configuration mo
 init(youboraAccountCode: String)
 ```
 
-or 
+or
 
 ``` Swift
 init(amgAnalyticsPartnerID: Int)
@@ -484,6 +484,8 @@ If the media does not require a KSession token, this should be left as null
 
 When sending media to the player, the mediaType defaults to VOD and will automatically attempt to determine if the media is live or VOD, this will affect the scrub bar colours (if they are different) and the layout of the scrub bar.
 
+If the media is a 'harvested' live event (such as a replay), the VOD scrub bar should show
+
 To force the player into 'live' mode, 'mediaType: .Live' should be passed to the player when sending media
 
 ``` Swift
@@ -629,9 +631,24 @@ To enable (or disable) spoiler free mode:
 amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false = scrub bar on
 ```
 
+### Bitrate Selection
+
+To instruct PlayKit to use a certain highest bitrate when streaming, you can use the following function:
+
+``` Swift
+amgPlayKit?.setMaximumBitrate(bitrate: Double)
+```
+
+PlayKit will atttempt to change bitrate to that value (or the closest one BELOW that value) for the rest of the stream. This change may not be immediate.
+
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.0.1
+- Play harvested content as VODs
+- Minor design change to standard UI
+- Added bitrate selector
 
 ### 1.0 - Release
 

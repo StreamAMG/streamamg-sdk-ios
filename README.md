@@ -102,6 +102,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.0.1 - PlayKit minor updates
+
 ### 1.0 - Release
 
 ### Beta releases

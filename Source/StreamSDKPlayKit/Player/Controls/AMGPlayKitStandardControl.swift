@@ -475,7 +475,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 //                endTime.text = timeForDisplay(time: mediaLength)
 //            } else {
                 let timeRemaining = mediaLength - position
-                startTime.text = "\(timeForDisplay(time: position)) / \(timeForDisplay(time: timeRemaining))"
+                startTime.text = "\(timeForDisplay(time: position)) / \(timeForDisplay(time: mediaLength))"
             
             
 //                endTime.text = timeForDisplay(time: timeRemaining)

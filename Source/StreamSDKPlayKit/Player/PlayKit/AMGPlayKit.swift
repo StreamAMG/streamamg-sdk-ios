@@ -297,8 +297,8 @@ import AVKit
         }
     }
     
-    func changeBitrate(){
-        // player?.settings.network.preferredPeakBitRate =
+    func setMaximumBitrate(bitrate: Double){
+        player?.settings.network.preferredPeakBitRate = bitrate
     }
     
     func playEventOccurred() {

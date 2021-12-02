@@ -31,6 +31,7 @@ public class AuthenticationSDK {
      */
     public func initWithURL(_ url: String, params: String? = nil) {
         self.url = url
+        parameters.removeAll()
         if let params = params, params.count > 0 {
             separateParameters(params: params)
         }
