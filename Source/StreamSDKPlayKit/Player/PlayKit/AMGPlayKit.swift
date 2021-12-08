@@ -24,7 +24,7 @@ import AVKit
  
  The SDK, at it's most basic, is a UIView, instantiated either programatically, or via Storyboard, that acts as a single point of reference for all Kaltura PlayKit functionality
  */
-@objc public class AMGPlayKit: UIView, AMGPlayerDelegate { // GCKSessionManagerListener, GCKRemoteMediaClientListener, GCKRequestDelegate, 
+@objc public class AMGPlayKit: UIView, AMGPlayerDelegate {
     
     var playerView: PlayerView? = nil
     public var player: Player!
@@ -297,7 +297,7 @@ import AVKit
         }
     }
     
-    func setMaximumBitrate(bitrate: Double){
+    public func setMaximumBitrate(bitrate: Double){
         player?.settings.network.preferredPeakBitRate = bitrate
     }
     
@@ -330,6 +330,15 @@ import AVKit
         if let name = analyticsConfiguration.userName {
             youboraOptions["username"] = name
         }
+        
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+                youboraOptions["appReleaseVersion"] = version
+       }
+        
+        if let name = Bundle.main.infoDictionary?["CFBundleName"] as? String {
+                youboraOptions["appName"] = name
+       }
+
         if !analyticsConfiguration.youboraParameters.isEmpty {
             var extraParams: [String: Any] = [:]
             analyticsConfiguration.youboraParameters.forEach {param in
@@ -337,7 +346,6 @@ import AVKit
             }
             youboraOptions["extraParams"] = extraParams
         }
-        
         return AnalyticsConfig(params: youboraOptions) //config  //
     }
     
