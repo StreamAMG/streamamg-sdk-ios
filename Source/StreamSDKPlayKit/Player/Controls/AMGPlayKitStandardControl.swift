@@ -15,7 +15,7 @@ import UIKit
 class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
     var isPlaying = true
-    var player: AMGPlayerDelegate? = nil
+    weak var player: AMGPlayerDelegate? = nil
     var playerView: UIView? = nil
     let playPause = UIButton(type: UIButton.ButtonType.custom)
     let forwardButton = UIButton(type: UIButton.ButtonType.custom)
@@ -585,6 +585,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     func showControls(_ shouldShow: Bool) {
         mainView.isHidden = !shouldShow
         bottomScrubView.isHidden = shouldShow
+    }
+    
+    func removeStandardView(){
+        player = nil
+        playerView = nil
     }
 
 }

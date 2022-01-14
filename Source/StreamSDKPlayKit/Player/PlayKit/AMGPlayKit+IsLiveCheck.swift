@@ -14,7 +14,7 @@ extension AMGPlayKit {
                 completion(false)
                 return
         }
-        let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+            let session = URLSession.shared
         var urlRequest = URLRequest(url: validURL)
         urlRequest.httpMethod = "POST"
         let request = session.dataTask(with: urlRequest) {data, response, error in
@@ -28,6 +28,8 @@ extension AMGPlayKit {
             completion(false)
         }
         request.resume()
+        } else {
+        completion(false)
         }
     }
     
@@ -37,7 +39,7 @@ extension AMGPlayKit {
                 completion(true)
                 return
         }
-        let session = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+            let session = URLSession.shared
         var urlRequest = URLRequest(url: validURL)
         urlRequest.httpMethod = "POST"
         let request = session.dataTask(with: urlRequest) {data, response, error in

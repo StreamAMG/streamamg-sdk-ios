@@ -17,8 +17,8 @@ extension AMGPlayKit {
         }
         let mediaEntry = LocalAssetsManager.managerWithDefaultDataStore().createLocalMediaEntry(for: entryID, localURL: url)
         controlUI?.setIsVOD()
-           player.prepare(MediaConfig(mediaEntry: mediaEntry))
-           player.play()
+           player?.prepare(MediaConfig(mediaEntry: mediaEntry))
+           player?.play()
         return true
     }
     

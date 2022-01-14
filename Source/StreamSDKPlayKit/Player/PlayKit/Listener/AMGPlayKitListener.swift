@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol AMGPlayKitListener {
+public protocol AMGPlayKitListener: AnyObject {
     func playEventOccurred(state: AMGPlayKitState)
     func stopEventOccurred(state: AMGPlayKitState)
     func loadChangeStateOccurred(state: AMGPlayKitState)

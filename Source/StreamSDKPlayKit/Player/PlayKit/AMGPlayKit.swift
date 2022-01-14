@@ -12,13 +12,6 @@ import PlayKitYoubora
 import MediaPlayer
 import AVKit
 
-
-
-/**
- This protocol handles calls from UI controls , including play state and playhead position
- */
-
-
 /**
  AMGPlayKit is an SDK that wraps Kaltura PlayKit, AMGAnalytics, IMA, basic casting and other useful functions into a simple to use view.
  
@@ -27,13 +20,13 @@ import AVKit
 @objc public class AMGPlayKit: UIView, AMGPlayerDelegate {
     
     var playerView: PlayerView? = nil
-    public var player: Player!
+    public var player: Player?
     var partnerID: Int = 0
     
     internal var currentMedia: MediaItem? = nil
     internal var currentMediaType: AMGMediaType = .VOD
     
-    internal var control: AMGControlDelegate? = nil
+    weak internal var control: AMGControlDelegate? = nil
     internal var controlUI: AMGPlayKitStandardControl? = nil
     
     internal var controlVisibleDuration: TimeInterval = 5
@@ -56,7 +49,7 @@ import AVKit
     var isLiveImageView = UIImageView()
     var logoImageView = UIImageView()
     
-    var listener: AMGPlayKitListener? = nil
+    weak var listener: AMGPlayKitListener? = nil
     
     private var playerState: PlayerState? = nil
     
@@ -65,20 +58,11 @@ import AVKit
     internal var pictureInPictureController: AVPictureInPictureController?
     internal var pipPossibleObservation: NSKeyValueObservation?
     
-    var analyticsConfiguration = AMGAnalyticsConfig()
+    var analyticsConfiguration: AMGAnalyticsConfig = AMGAnalyticsConfig()
     
     private var currentAdvert = ""
     
-   // var adIsPlaying = false
-    
     var tap: UITapGestureRecognizer? = nil
-    
-    // Casting properties
-    
-    //    internal var mediaInformation: GCKMediaInformation?
-    //    internal var sessionManager: GCKSessionManager?
-    //    internal var castButton: GCKUICastButton!
-    
     
     /**
      Standard initialisation
@@ -119,7 +103,7 @@ import AVKit
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        //   createPlayer()
+        // Requires 'createPlayer' to be called from app
     }
     
     /**
@@ -162,17 +146,23 @@ import AVKit
     }
     
     public func removePlayer() {
-        player.stop()
-        player.removeObserver(self, events: [AdEvent.adStarted, PlayerEvent.error, PlayerEvent.errorLog, PlayerEvent.stateChanged, PlayerEvent.play, PlayerEvent.playing, PlayerEvent.pause, PlayerEvent.ended, PlayerEvent.durationChanged])
-        if let observer = playHeadObserver {
-            player.removePeriodicObserver(observer)
+        DispatchQueue.main.async{
+            self.player?.stop()
+            self.player?.removeObserver(self, events: [AdEvent.adStarted, PlayerEvent.error, PlayerEvent.errorLog, PlayerEvent.stateChanged, PlayerEvent.play, PlayerEvent.playing, PlayerEvent.pause, PlayerEvent.ended, PlayerEvent.durationChanged])
+            if let observer = self.playHeadObserver {
+                self.player?.removePeriodicObserver(observer)
+            }
+            self.controlUI?.removeStandardView()
+            self.control = nil
+            self.cancelTimer()
+            self.controlVisibleTimer = nil
+            self.disablePictureInPicture()
+            self.player?.destroy()
+            self.player = nil
+            self.playerView?.removeFromSuperview()
+            self.playerView = nil
+            self.listener = nil
         }
-        cancelTimer()
-        controlVisibleTimer = nil
-        disablePictureInPicture()
-        player = nil
-        playerView = nil
-        self.listener = nil
     }
     
     public func setPlayKitListener(listener: AMGPlayKitListener) {
@@ -189,59 +179,58 @@ import AVKit
         default:
             break
         }
-       
         
         player = PlayKitManager.shared.loadPlayer(pluginConfig: createPluginConfig())
-        player?.addObserver(self, events: [AdEvent.adStarted]) { event in
-        //    self.adIsPlaying = true
-            self.disableTap()
+        player?.addObserver(self, events: [AdEvent.adStarted]) { [weak self] event in
+            self?.disableTap()
         }
-        player?.addObserver(self, events: [AdEvent.adComplete]) { event in
-        //    self.adIsPlaying = false
-            self.enableTap()
+        
+        player?.addObserver(self, events: [AdEvent.adComplete]) { [weak self] event in
+            self?.enableTap()
         }
-        player?.addObserver(self, events: [AdEvent.adSkipped]) { event in
-        //    self.adIsPlaying = false
-            self.enableTap()
+        
+        player?.addObserver(self, events: [AdEvent.adSkipped]) { [weak self] event in
+            self?.enableTap()
         }
-        self.player?.addObserver(self, events: [PlayerEvent.error]) { event in
+        
+        self.player?.addObserver(self, events: [PlayerEvent.error]) { [weak self] event in
             var knownError = false
             if let data = event.data, let error = data["error"] as? String {
                 for possibleError in 7000...7010 {
                     if error.contains("\(possibleError)") {
                         knownError = true
                         if let myError = AMGPlayerError(rawValue: possibleError) {
-                            self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: possibleError, errorMessage: myError.errorDescription()))
+                            self?.listener?.errorOccurred(error: AMGPlayKitError(errorCode: possibleError, errorMessage: myError.errorDescription()))
                         }
                     }
                 }
             }
             if !knownError {
-                self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: -1, errorMessage: "UNKNOWN_ERROR"))
+                self?.listener?.errorOccurred(error: AMGPlayKitError(errorCode: -1, errorMessage: "UNKNOWN_ERROR"))
             }
         }
         
-        self.player?.addObserver(self, events: [PlayerEvent.errorLog]) { event in
+        self.player?.addObserver(self, events: [PlayerEvent.errorLog]) { [weak self] event in
             var knownError = false
             if let data = event.data, let error = data["error"] as? String {
                 for possibleError in 7000...7010 {
                     if error.contains("\(possibleError)") {
                         knownError = true
                         if let myError = AMGPlayerError(rawValue: possibleError) {
-                            self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: possibleError, errorMessage: myError.errorDescription()))
+                            self?.listener?.errorOccurred(error: AMGPlayKitError(errorCode: possibleError, errorMessage: myError.errorDescription()))
                         }
                     }
                 }
             }
             if !knownError {
-                self.listener?.errorOccurred(error: AMGPlayKitError(errorCode: -1, errorMessage: "UNKNOWN_ERROR"))
+                self?.listener?.errorOccurred(error: AMGPlayKitError(errorCode: -1, errorMessage: "UNKNOWN_ERROR"))
             }
         }
-        self.player?.addObserver(self, events: [PlayerEvent.stateChanged]) { event in
-            
-            self.playerState = event.newState
+        
+        self.player?.addObserver(self, events: [PlayerEvent.stateChanged]) { [weak self] event in
+            self?.playerState = event.newState
             var newState: AMGPlayerState? = nil
-            switch self.playerState{
+            switch self?.playerState{
             case .idle:
                 newState = .Idle
             case .ready:
@@ -253,38 +242,37 @@ import AVKit
             }
             
             if let newState = newState {
-                self.listener?.loadChangeStateOccurred(state: AMGPlayKitState(state: newState))
+                self?.listener?.loadChangeStateOccurred(state: AMGPlayKitState(state: newState))
             }
             
         }
-        self.player?.addObserver(self, events: [PlayerEvent.play]) { event in
-            self.playEventOccurred()
-            self.listener?.playEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Play))
+        self.player?.addObserver(self, events: [PlayerEvent.play]) { [weak self] event in
+            self?.playEventOccurred()
+            self?.listener?.playEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Play))
         }
-        self.player?.addObserver(self, events: [PlayerEvent.playing]) { event in
-            self.playEventOccurred()
-            self.listener?.playEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Playing))
+        self.player?.addObserver(self, events: [PlayerEvent.playing]) { [weak self] event in
+            self?.playEventOccurred()
+            self?.listener?.playEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Playing))
         }
-        self.player?.addObserver(self, events: [PlayerEvent.pause]) { event in
-            self.stopEventOccurred()
-            self.listener?.stopEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Pause))
+        self.player?.addObserver(self, events: [PlayerEvent.pause]) { [weak self] event in
+            self?.stopEventOccurred()
+            self?.listener?.stopEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Pause))
         }
-        self.player?.addObserver(self, events: [PlayerEvent.ended]) { event in
-            self.stopEventOccurred()
-            self.listener?.stopEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Ended))
+        self.player?.addObserver(self, events: [PlayerEvent.ended]) { [weak self] event in
+            self?.stopEventOccurred()
+            self?.listener?.stopEventOccurred(state: AMGPlayKitState(state: AMGPlayerState.Ended))
         }
-        self.player?.addObserver(self, events: [PlayerEvent.durationChanged]) { event in
-            self.changeDuration(length: TimeInterval(event.duration?.doubleValue ?? 0))
-            self.listener?.durationChangeOccurred(state: AMGPlayKitState(state: AMGPlayerState.Loaded, duration: TimeInterval(event.duration?.doubleValue ?? 0)))
+        self.player?.addObserver(self, events: [PlayerEvent.durationChanged]) { [weak self] event in
+            self?.changeDuration(length: TimeInterval(event.duration?.doubleValue ?? 0))
+            self?.listener?.durationChangeOccurred(state: AMGPlayKitState(state: AMGPlayerState.Loaded, duration: TimeInterval(event.duration?.doubleValue ?? 0)))
         }
         playHeadObserver = self.player?.addPeriodicObserver(interval: 0.1, observeOn: DispatchQueue.main, using: { [weak self] (pos) in
             self?.control?.changePlayHead(position: pos)
         })
-        playerView = PlayerView.createPlayerView(forPlayer: player)  //PlayerView(frame: frame)
+        playerView = PlayerView.createPlayerView(forPlayer: player!)  //PlayerView(frame: frame)
         playerView?.frame = self.bounds
         playerView?.contentMode = .scaleAspectFill
         addSubview(playerView!)
-        
     }
     
     func changeDuration(length: TimeInterval) {
@@ -332,13 +320,13 @@ import AVKit
         }
         
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-                youboraOptions["appReleaseVersion"] = version
-       }
+            youboraOptions["appReleaseVersion"] = version
+        }
         
         if let name = Bundle.main.infoDictionary?["CFBundleName"] as? String {
-                youboraOptions["appName"] = name
-       }
-
+            youboraOptions["appName"] = name
+        }
+        
         if !analyticsConfiguration.youboraParameters.isEmpty {
             var extraParams: [String: Any] = [:]
             analyticsConfiguration.youboraParameters.forEach {param in
@@ -350,7 +338,6 @@ import AVKit
     }
     
     func createPluginConfig() -> PluginConfig? {
-        
         var config: [String: Any] = [:]
         switch analyticsConfiguration.analyticsService {
         case .AMGANALYTICS:
@@ -360,35 +347,23 @@ import AVKit
         default:
             break
         }
-        
         config[IMAPlugin.pluginName] = getIMAPluginConfig()
-        
-        
         return PluginConfig(config: config)
-        // Analytics disabled until the backend is complete
-        //return PluginConfig(config: [AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
-        // return PluginConfig(config: [IMAPlugin.pluginName: getIMAPluginConfig(adTagUrl: ""), AMGAnalyticsPlugin.pluginName: createAnalyticsPlugin()])
     }
     
     func updatePluginConfig() {
-        
-       // var config: [String: Any] = [:]
         switch analyticsConfiguration.analyticsService {
         case .AMGANALYTICS:
-       //     config[AMGAnalyticsPlugin.pluginName] = createAnalyticsPlugin()
-        //    config[IMAPlugin.pluginName] = getIMAPluginConfig()
-            player.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: getIMAPluginConfig()) //PluginConfig(config: config))
+            player?.updatePluginConfig(pluginName: AMGAnalyticsPlugin.pluginName, config: getIMAPluginConfig())
         case .YOUBORA:
-         //   config[YouboraPlugin.pluginName] = createYouboraPlugin()
-           // config[IMAPlugin.pluginName] = getIMAPluginConfig()
-            player.updatePluginConfig(pluginName: YouboraPlugin.pluginName, config: createYouboraPlugin())//PluginConfig(config: config))
+            player?.updatePluginConfig(pluginName: YouboraPlugin.pluginName, config: createYouboraPlugin())//PluginConfig(config: config))
         default:
             break
         }
         
         var imaconfig: [String: Any] = [:]
         imaconfig[IMAPlugin.pluginName] = getIMAPluginConfig()
-        player.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: PluginConfig(config: imaconfig))
+        player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: PluginConfig(config: imaconfig))
         
         return
     }
@@ -399,13 +374,10 @@ import AVKit
         }
     }
     
-    //    public func isLive() -> Bool {
-    //        return player.isLive()
-    //    }
-    
     private func loadMedia(media: MediaItem, mediaType: AMGMediaType){
         currentMedia = media
         currentMediaType = mediaType
+        player?.pause()
         if partnerID > 0{
             if let player = player {
                 updatePluginConfig()
@@ -482,7 +454,6 @@ import AVKit
      - Parameter adTagUrl: The VAST URL of the advert to be consumed
      */
     
-    
     public func toggleLive(){
         if currentMediaType == .Live {
             currentMediaType = .VOD
@@ -496,16 +467,16 @@ import AVKit
     public func setSpoilerFree(enabled: Bool) {
         controlUI?.setSpoilerFree(enabled)
     }
-
+    
     public func serveAdvert(adTagUrl: String){
         currentAdvert = adTagUrl
-    self.player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: getIMAPluginConfig())
+        self.player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: getIMAPluginConfig())
     }
     
     private func getIMAPluginConfig() -> IMAConfig {
         let adsConfig = IMAConfig()
         if !currentAdvert.isEmpty {
-        adsConfig.set(adTagUrl: currentAdvert)
+            adsConfig.set(adTagUrl: currentAdvert)
         }
         return adsConfig
     }
@@ -627,8 +598,6 @@ import AVKit
         skipBackwardTime = TimeInterval(duration / 1000)
         skipForwardTime = TimeInterval(duration / 1000)
     }
-    
-    
     
     public func playerLayer() -> AVPlayerLayer? {
         return playerView?.layer as? AVPlayerLayer

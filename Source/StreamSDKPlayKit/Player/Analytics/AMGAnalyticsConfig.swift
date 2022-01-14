@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class AMGAnalyticsConfig {
+public struct AMGAnalyticsConfig {
     var analyticsService: AMGAnalyticsService = .DISABLED
     var accountCode: String = ""
     var userName: String? = nil
@@ -28,7 +28,7 @@ public class AMGAnalyticsConfig {
         partnerID = amgAnalyticsPartnerID
     }
     
-    internal func updateYouboraParameter(id: Int, value: String){
+    internal mutating func updateYouboraParameter(id: Int, value: String){
         
         if let param = youboraParameters.firstIndex(where: {$0.id == id}), param < youboraParameters.count {
             youboraParameters.remove(at: param)
@@ -72,7 +72,7 @@ public class AMGAnalyticsConfig {
             if accountCodeObject.count == 0 {
                 print("Creating Youbora service with no account code")
             }
-            let service = AMGAnalyticsConfig(youboraAccountCode: self.accountCodeObject)
+            var service = AMGAnalyticsConfig(youboraAccountCode: self.accountCodeObject)
             service.userName = userNameObject
             service.youboraParameters = youboraParametersObject
             return service

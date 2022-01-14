@@ -645,6 +645,11 @@ PlayKit will atttempt to change bitrate to that value (or the closest one BELOW 
 
 All notable changes to this project will be documented in this section.
 
+### 1.0.3
+- Fixed crash due to optional safety
+- Fixed Playkit deinitialise failure
+- Updated player to stop playing before loading new media
+
 ### 1.0.1
 - Play harvested content as VODs
 - Minor design change to standard UI

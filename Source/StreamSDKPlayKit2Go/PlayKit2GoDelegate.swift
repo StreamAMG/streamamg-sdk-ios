@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol PlayKit2GoDelegate {
+public protocol PlayKit2GoDelegate: AnyObject {
     func downloadDidError(item: PlayKitDownloadItem)
     func downloadDidUpdate(item: PlayKitDownloadItem)
     func downloadDidComplete(item: PlayKitDownloadItem)

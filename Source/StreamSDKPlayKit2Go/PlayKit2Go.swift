@@ -14,7 +14,7 @@ public class PlayKit2Go: ContentManagerDelegate {
     public static let instance = PlayKit2Go()
     let cm = ContentManager.shared
     let lam = LocalAssetsManager.managerWithDefaultDataStore()
-    var delegate: PlayKit2GoDelegate? = nil
+    weak var delegate: PlayKit2GoDelegate? = nil
     
     private var allValidIDs: [String] = []
     private init() {

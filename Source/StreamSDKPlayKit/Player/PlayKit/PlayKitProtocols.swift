@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol AMGPlayerDelegate {
+public protocol AMGPlayerDelegate: AnyObject {
     func play()
     func pause()
     func scrub(position: TimeInterval)
@@ -23,14 +23,14 @@ public protocol AMGPlayerDelegate {
 }
 
 
-public protocol AMGControlDelegate {
+public protocol AMGControlDelegate: AnyObject {
     func play()
     func pause()
     func changePlayHead(position: TimeInterval)
     func changeMediaLength(length: TimeInterval)
 }
 
-public protocol AMGPictureInPictureDelegate {
+public protocol AMGPictureInPictureDelegate: AnyObject {
     func pictureInPictureStatus(isPossible: Bool)
     func pictureInPictureWillStart()
     func pictureInPictureDidStop()
