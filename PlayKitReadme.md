@@ -645,6 +645,9 @@ PlayKit will atttempt to change bitrate to that value (or the closest one BELOW 
 
 All notable changes to this project will be documented in this section.
 
+### 1.0.4
+- Fixed fullscreen button to standard UI
+
 ### 1.0.3
 - Fixed crash due to optional safety
 - Fixed Playkit deinitialise failure

@@ -208,7 +208,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         if let customImage = configModel.fullScreenImage, let myImage = UIImage(named: customImage) {
             fullScreenImage = myImage
-        } else if let myImage = UIImage(named: "fullscreenButton", in: bundle, compatibleWith: .none){
+        } else if let myImage = UIImage(named: "fullscrButton", in: bundle, compatibleWith: .none){
             fullScreenImage = myImage
         }
         if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
