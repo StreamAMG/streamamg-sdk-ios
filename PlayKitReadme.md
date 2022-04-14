@@ -50,9 +50,10 @@ The following setup code should be carried out in the 'viewDidAppear' function:
 Create the player:
 
 ``` Swift
-amgPlaykit?.createPlayer(analytics: AMGAnalyticsConfig? = nil)
+amgPlaykit?.createPlayer(analytics: AMGAnalyticsConfig? = nil, enableIMA: Bool = true)
 ```
 
+'enableIMA' is an optional parameter, enabled by default, that it loads IMA Plugin
 (Optional) Add the partnerID - see 'Manually updating the PartnerID'
 
 ### Removing the player
@@ -246,6 +247,11 @@ Set the colour of the live scrub bar 'tracked' time to a hex formatted RGB colou
 Set the colour of the VOD scrub bar 'tracked' time to a hex formatted RGB colour (eg "#AA00D3")
 ``` Swift
 .scrubBarVODColour(colour: String)
+```
+
+Toggle the visibility of the bitrate selector
+``` Swift
+.setBitrateSelector(_ isOn: Bool)
 ```
 
 ## Media overlays
@@ -639,11 +645,14 @@ To instruct PlayKit to use a certain highest bitrate when streaming, you can use
 amgPlayKit?.setMaximumBitrate(bitrate: Double)
 ```
 
-PlayKit will atttempt to change bitrate to that value (or the closest one BELOW that value) for the rest of the stream. This change may not be immediate.
+PlayKit will atttempt to change bitrate to that value (or the closest one BELOW that value) for the rest of the stream.
 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.1.0
+- Bitrate selector UI
 
 ### 1.0.4
 - Fixed fullscreen button to standard UI

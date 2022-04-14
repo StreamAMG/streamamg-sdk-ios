@@ -53,13 +53,6 @@ extension AMGPlayKit: URLSessionTaskDelegate {
         }
     }
     
-    private func validKS(ks: String?)-> String {
-        if let ks = ks {
-            return "ks/\(ks)/"
-        }
-        return ""
-    }
-    
     func sendCastingURL(url: String?) {
         guard let url = url, let urlToCast = URL(string: url) else {
             return

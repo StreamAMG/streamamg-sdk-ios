@@ -22,13 +22,16 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     let backwardButton = UIButton(type: UIButton.ButtonType.custom)
     let fullscreenButton = UIButton(type: UIButton.ButtonType.custom)
     let minimiseButton = UIButton(type: UIButton.ButtonType.custom)
+    let settingsButton = UIButton(type: UIButton.ButtonType.custom)
     var playImage: UIImage = UIImage()
     var skipForawrdImage: UIImage = UIImage()
     var skipBackwardImage: UIImage = UIImage()
     var pauseImage: UIImage = UIImage()
     var fullScreenImage: UIImage = UIImage()
+    var settingsImage: UIImage = UIImage()
     var minimiseImage: UIImage = UIImage()
     var thumb: UIImage = UIImage()
+    var checkmark: UIImage = UIImage()
     var scrubBar: UISlider = UISlider()
     
     var scrubBarBackground: UIView = UIView()
@@ -36,6 +39,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     var spoilerFreeTextView: UIView = UIView()
     var spoilerFreeLeftView: UIView = UIView()
     var spoilerFreeRightView: UIView = UIView()
+    
+    
+    var bitrateView: UIView? = nil
     
     
     var liveButton = UIButton()
@@ -75,6 +81,12 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     private var bottomScrubViewTrack: UIView = UIView(frame: CGRect.zero)
     
     private var bottomTrackEnabled = false
+    
+    var bitrates: [Int64] = []
+    var selectedBitrate = 0
+    var bitrateColors: [UIColor] = []
+    
+    var bitrateScroll: UIScrollView = UIScrollView(frame: .zero) // UIView = UIView()
 
     init (hostView: UIView, delegate: AMGPlayerDelegate, config: AMGPlayKitStandardControlsConfigurationModel? = nil){
         super.init(frame: CGRect(x: 0, y: 0, width: hostView.frame.width, height: hostView.frame.height))
@@ -216,10 +228,26 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
             minimiseImage = myImage
         }
-        
+//        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
+//            minimiseImage = myImage
+//        } else
+        if let myImage = UIImage(named: "settingsButton", in: bundle, compatibleWith: .none){
+            settingsImage = myImage
+        }
         if let myImage = UIImage(named: "slider_thumb", in: bundle, compatibleWith: .none){
             thumb = myImage
         }
+        if let customImage = UIImage(named: "checkmark", in: bundle, compatibleWith: .none) {
+            checkmark = customImage
+        }
+        
+        if let color = UIColor(named: "bitrate_dark_gray", in: bundle, compatibleWith: .none) {
+            bitrateColors.append(color)
+        }
+        if let color = UIColor(named: "bitrate_medium_gray", in: bundle, compatibleWith: .none) {
+            bitrateColors.append(color)
+        }
+        
         playPause.frame = CGRect(x: x, y: y, width: playPauseSize, height: playPauseSize)
         playPause.tintColor = UIColor.white
         playPause.contentMode = .scaleToFill
@@ -242,7 +270,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         mainView.addSubview(forwardButton)
         // Add scrub bar
 
-        let scrubBarBackY = h-65
+        let scrubBarBackY = h-70
         let scrubBarBackX = CGFloat(20)
         let scrubBarBackW = w-40
         let scrubBarBackH = CGFloat(60)
@@ -326,21 +354,32 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         
         if !hideFullScreenButton {
-        fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
-        fullscreenButton.tintColor = UIColor.white
-        fullscreenButton.contentMode = .scaleToFill
-        fullscreenButton.setImage(fullScreenImage, for: .normal)
-        fullscreenButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
+            fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
+            fullscreenButton.tintColor = UIColor.white
+            fullscreenButton.contentMode = .scaleToFill
+            fullscreenButton.setImage(fullScreenImage, for: .normal)
+            fullscreenButton.addTarget(self, action: #selector(fullScreenToggle), for: .touchUpInside)
             mainView.addSubview(fullscreenButton)
         }
         
-
+        if configModel.bitrateSelector {
+            settingsButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 5, width: skipSize, height: skipSize)
+            settingsButton.tintColor = UIColor.white
+            settingsButton.contentMode = .scaleToFill
+            settingsButton.setImage(settingsImage, for: .normal)
+            settingsButton.addTarget(self, action: #selector(openBitrateView), for: .touchUpInside)
+            settingsButton.layer.cornerRadius = 8
+            mainView.addSubview(settingsButton)
+        }
         
         updateIsLive()
         updateSpoilerFree()
         showControls(false)
+        
+        //createBitrateView()
 
     }
+
     
     func updateIsLive(){
         var scrubBarx: CGFloat = 10
@@ -447,10 +486,29 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             player?.fullScreen()
         }
     }
+    
+    
+    @objc func closeBitrateView() {
+        bitrateView?.removeFromSuperview()
+        player?.startControlVisibilityTimer()
+        settingsButton.backgroundColor = .clear
+    }
+    
+    
+    @objc func openBitrateView() {
+        bitrateView = UIView.init(frame: self.bounds)
+        bitrateView?.backgroundColor = .clear // UIColor.init(red: 1, green: 1, blue: 1, alpha: 0.3)
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(closeBitrateView))
+        bitrateView?.addGestureRecognizer(gesture)
+        createBitrateSelector(withBitrateList: bitrates)
+        addSubview(bitrateView!)
+        player?.cancelTimer()
+        settingsButton.backgroundColor = bitrateColors.count > 0 ? bitrateColors.first : UIColor.black
+    }
 
     func play() {
         isPlaying = true
-    playPause.setImage(pauseImage, for: .normal)
+        playPause.setImage(pauseImage, for: .normal)
     }
 
     func pause() {
@@ -460,29 +518,19 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
     func changePlayHead(position: TimeInterval) {
         if !updatePlayHeadManually {
-        if position <= 0 {
-            scrubBar.value = 0
-        } else if position >= mediaLength {
-            scrubBar.value = Float(mediaLength)
-        } else {
-            scrubBar.value = Float(position)
-        }
-        setTrackSize(position: position)
-        if trackTimeShowing {
-//            if currentTimeShowing {
-//                currentTime.text = timeForDisplay(time: position)
-//                startTime.text = "00:00"
-//                endTime.text = timeForDisplay(time: mediaLength)
-//            } else {
-                let timeRemaining = mediaLength - position
+            if position <= 0 {
+                scrubBar.value = 0
+            } else if position >= mediaLength {
+                scrubBar.value = Float(mediaLength)
+            } else {
+                scrubBar.value = Float(position)
+            }
+            setTrackSize(position: position)
+            if trackTimeShowing {
                 startTime.text = "\(timeForDisplay(time: position)) / \(timeForDisplay(time: mediaLength))"
-            
-            
-//                endTime.text = timeForDisplay(time: timeRemaining)
-//            }
-        } else if currentTimeShowing {
-            currentTime.text = timeForDisplay(time: position)
-        }
+            } else if currentTimeShowing {
+                currentTime.text = timeForDisplay(time: position)
+            }
         }
         if (position < mediaLength - 1) {
             liveButton.setTitle("GO LIVE", for: .normal)
@@ -555,29 +603,32 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         forwardButton.frame = CGRect(x: x + playPauseSize + 20, y: skipY, width: skipSize, height: skipSize)
 
-//        let scrubBarBackY = h-65
-//        let scrubBarBackX = CGFloat(20)
-//        let scrubBarBackW = w-40
-//        let scrubBarBackH = CGFloat(40)
-        
-        let scrubBarBackY = h-65
+        let scrubBarBackY = h-70
         let scrubBarBackX = CGFloat(20)
         let scrubBarBackW = w-40
         let scrubBarBackH = CGFloat(60)
         
         scrubBarBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
-      //  scrubBarBackground.backgroundColor = UIColor.red
         spoilerFreeBackground.frame = CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH)
         
 
     
         fullscreenButton.frame = CGRect(x: w - skipSize - 20, y: 20, width: skipSize, height: skipSize)
         
+        
+        settingsButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 5, width: skipSize, height: skipSize)
+        
         if (isFullScreen) {
             fullscreenButton.setImage(minimiseImage, for: .normal)
         } else {
             fullscreenButton.setImage(fullScreenImage, for: .normal)
         }
+        
+        if let bView = bitrateView {
+            bView.frame = self.bounds
+            self.bitrateScroll.heightAnchor.constraint(equalToConstant: min(bView.frame.height - 10, self.bitrateScroll.contentSize.height)).isActive = true
+        }
+        
         updateIsLive()
         updateSpoilerFree()
     }
@@ -585,6 +636,65 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     func showControls(_ shouldShow: Bool) {
         mainView.isHidden = !shouldShow
         bottomScrubView.isHidden = shouldShow
+        closeBitrateView()
+    }
+    
+    
+    
+    func createBitrateSelector(withBitrateList: [Int64]){
+        bitrates = withBitrateList
+        let maxWidth: CGFloat = 165
+        var count = 1
+        DispatchQueue.main.async {
+            self.bitrateScroll.removeFromSuperview()
+            self.bitrateScroll = UIScrollView(frame: .zero)
+            self.bitrateScroll.alwaysBounceVertical = false;
+            self.bitrateScroll.translatesAutoresizingMaskIntoConstraints = false
+            self.bitrateScroll.contentInsetAdjustmentBehavior = .never
+            self.bitrateScroll.contentSize = CGSize(width: maxWidth, height: CGFloat(self.bitrates.count + 1) * 48)
+            self.bitrateScroll.backgroundColor = .clear
+            self.bitrateScroll.layer.cornerRadius = 8
+            
+            self.createBitrateLabel(text: "Auto", width: maxWidth, index: 0)
+            withBitrateList.forEach {bitrate in
+                self.createBitrateLabel(text: "\(bitrate)", width: maxWidth, index: count)
+                count += 1
+            }
+            self.bitrateView?.addSubview(self.bitrateScroll)
+            
+            if let bView = self.bitrateView {
+                self.bitrateScroll.trailingAnchor.constraint(equalTo: bView.trailingAnchor, constant: -65).isActive = true
+                self.bitrateScroll.heightAnchor.constraint(equalToConstant: min(bView.frame.height - 10, self.bitrateScroll.contentSize.height)).isActive = true
+                self.bitrateScroll.bottomAnchor.constraint(equalTo: bView.bottomAnchor, constant: -5).isActive = true
+                self.bitrateScroll.widthAnchor.constraint(equalToConstant: maxWidth).isActive = true
+            }
+        }
+    }
+    
+    func createBitrateLabel(text: String, width: CGFloat, index: Int) {
+        let tText = UIButton(frame: CGRect(x: 0, y: CGFloat(48 * index), width: width, height: 48))
+        tText.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        tText.setTitle(text, for: .normal)
+        tText.setTitleColor(.white, for: .normal)
+        tText.contentHorizontalAlignment = .left
+        tText.titleEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
+        
+        if index == selectedBitrate {
+            tText.backgroundColor = bitrateColors.count > 0 ? bitrateColors.first : UIColor.black
+            tText.setImage(checkmark.withRenderingMode(.alwaysOriginal), for: .normal)
+            tText.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+            tText.imageEdgeInsets = UIEdgeInsets(top: 0, left: width - 30, bottom: 0, right: 0)
+        } else {
+            tText.backgroundColor = bitrateColors.count > 1 ? bitrateColors[1] : UIColor.darkGray
+        }
+        
+        tText.tag = index
+        tText.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
+        
+        let divider = UIView(frame: CGRect(x: 0, y: 0, width: width, height: 0.5))
+        divider.backgroundColor = bitrateColors.count > 0 ? bitrateColors.first : UIColor.black
+        tText.addSubview(divider)
+        self.bitrateScroll.addSubview(tText)
     }
     
     func removeStandardView(){
@@ -592,4 +702,23 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         playerView = nil
     }
 
+    @objc func swapBitRate(button: UIButton) {
+        let myTag = button.tag
+        if myTag == selectedBitrate || bitrates.count == 0 || tag > bitrates.count {
+            closeBitrateView()
+            return
+        }
+        
+        if myTag == 0 {
+            selectedBitrate = 0
+            player?.setMaximumBitrate(bitrate: bitrates.last!)
+            closeBitrateView()
+            return
+        }
+        
+        selectedBitrate = myTag
+        player?.setMaximumBitrate(bitrate: bitrates[myTag - 1])
+        closeBitrateView()
+        return
+    }
 }

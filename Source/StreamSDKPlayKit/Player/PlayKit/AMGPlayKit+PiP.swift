@@ -29,7 +29,7 @@ extension AMGPlayKit: AVPictureInPictureControllerDelegate {
         }
     }
     
-    public func setPictureInPictureDelegate(_ delegate: AMGPictureInPictureDelegate) {
+    public func setPictureInPictureDelegate(_ delegate: AMGPictureInPictureDelegate?) {
         pipDelegate = delegate
     }
     
@@ -65,9 +65,9 @@ extension AMGPlayKit: AVPictureInPictureControllerDelegate {
     }
     
     @objc internal func enterBackground(){
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        DispatchQueue.main.async {
             if let pip = self.pictureInPictureController, pip.isPictureInPictureActive {
-        self.player?.play()
+                self.player?.play()
             }
         }
     }

@@ -34,7 +34,7 @@ public struct AMGPlayKitStandardControlsConfigurationModel: Codable {
     var liveTrack = "#D0FF39"
     var vodTrack = "#71ABF3"
     
-    
+    var bitrateSelector = false
 }
 
 /**
@@ -69,6 +69,7 @@ public class AMGControlBuilder {
     var liveTrack = "#D0FF39"
     var vodTrack = "#71ABF3"
 
+    var bitrateSelector = false
     
     /**
     Specify the image to use for the play button
@@ -270,12 +271,20 @@ public class AMGControlBuilder {
         vodTrack = newColour
         return self
     }
+    
+    /**
+     Toggle the visibility of the bitrate selector
+     */
+    public func setBitrateSelector(_ isOn: Bool) -> AMGControlBuilder {
+        bitrateSelector = isOn
+        return self
+    }
 
     /**
      Returns a complete and valid AMGPlayKitStandardControlsConfigurationModel
      */
     public func build() -> AMGPlayKitStandardControlsConfigurationModel {
-        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack)
+        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack, bitrateSelector: bitrateSelector)
         
         
         
