@@ -19,8 +19,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
     
 
     private static var partnerID = 0
-    //private static var baseURL = "https://nudeiys3md.execute-api.eu-west-1.amazonaws.com/api/submit"
-    private static var baseURL = "http://stats.mp.streamamg.com/SessionUpdate?"
+    private static var baseURL = "https://stats.mp.streamamg.com/SessionUpdate?"
     
     // MARK: - Private local variables
     

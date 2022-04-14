@@ -18,7 +18,7 @@ import AVKit
  The SDK, at it's most basic, is a UIView, instantiated either programatically, or via Storyboard, that acts as a single point of reference for all Kaltura PlayKit functionality
  */
 @objc public class AMGPlayKit: UIView, AMGPlayerDelegate {
-    
+
     var playerView: PlayerView? = nil
     public var player: Player?
     var partnerID: Int = 0
@@ -53,12 +53,13 @@ import AVKit
     
     private var playerState: PlayerState? = nil
     
-    internal var pipDelegate: AMGPictureInPictureDelegate?
+    weak internal var pipDelegate: AMGPictureInPictureDelegate?
     
     internal var pictureInPictureController: AVPictureInPictureController?
     internal var pipPossibleObservation: NSKeyValueObservation?
     
     var analyticsConfiguration: AMGAnalyticsConfig = AMGAnalyticsConfig()
+    private var ima: Bool = true
     
     private var currentAdvert = ""
     
@@ -133,11 +134,12 @@ import AVKit
      
      - Parameter analytics: A valid AMGAnalyticsConfig object or 'nil' if no analytics is to be used
      */
-    public func createPlayer(analytics: AMGAnalyticsConfig? = nil){
+    public func createPlayer(analytics: AMGAnalyticsConfig? = nil, enableIMA: Bool = true){
         tap = UITapGestureRecognizer(target: self, action: #selector(self.bringControlToForeground(_:)))
         if let analyticsConfig = analytics {
             analyticsConfiguration = analyticsConfig
         }
+        ima = enableIMA
         setNeedsLayout()
         layoutIfNeeded()
         constructPlayKit()
@@ -170,7 +172,9 @@ import AVKit
     }
     
     func constructPlayKit() {
-        PlayKitManager.shared.registerPlugin(IMAPlugin.self)
+        if ima {
+            PlayKitManager.shared.registerPlugin(IMAPlugin.self)
+        }
         switch analyticsConfiguration.analyticsService {
         case .AMGANALYTICS:
             PlayKitManager.shared.registerPlugin(AMGAnalyticsPlugin.self)
@@ -284,10 +288,7 @@ import AVKit
             control?.changePlayHead(position: playHead)
         }
     }
-    
-    public func setMaximumBitrate(bitrate: Double){
-        player?.settings.network.preferredPeakBitRate = bitrate
-    }
+
     
     func playEventOccurred() {
         control?.play()
@@ -295,6 +296,16 @@ import AVKit
     
     func stopEventOccurred() {
         control?.pause()
+    }
+    
+    internal func validKS(ks: String?, trailing: Bool = false)-> String {
+        if let ks = ks, !ks.isEmpty {
+            if trailing {
+                return "ks=\(ks)&"
+            }
+            return "ks/\(ks)/"
+        }
+        return ""
     }
     
     /**
@@ -347,7 +358,11 @@ import AVKit
         default:
             break
         }
-        config[IMAPlugin.pluginName] = getIMAPluginConfig()
+        
+        if ima {
+            config[IMAPlugin.pluginName] = getIMAPluginConfig()
+        }
+        
         return PluginConfig(config: config)
     }
     
@@ -361,9 +376,11 @@ import AVKit
             break
         }
         
-        var imaconfig: [String: Any] = [:]
-        imaconfig[IMAPlugin.pluginName] = getIMAPluginConfig()
-        player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: PluginConfig(config: imaconfig))
+        if ima {
+            var imaconfig: [String: Any] = [:]
+            imaconfig[IMAPlugin.pluginName] = getIMAPluginConfig()
+            player?.updatePluginConfig(pluginName: IMAPlugin.pluginName, config: PluginConfig(config: imaconfig))
+        }
         
         return
     }
@@ -382,6 +399,7 @@ import AVKit
             if let player = player {
                 updatePluginConfig()
                 player.prepare(media.media())
+                updateBitrateSelector()
                 if mediaType == .Live{
                     self.currentMediaType = .Live
                     self.controlUI?.setIsLive()
@@ -399,6 +417,41 @@ import AVKit
                     }
                 }
                 
+                player.play()
+            }
+        }
+    }
+    
+    internal func loadMedia(media: MediaItem, mediaType: AMGMediaType, startPosition: Int64, bitrate: Double){
+        currentMedia = media
+        currentMediaType = mediaType
+        player?.pause()
+        if partnerID > 0{
+            if let player = player {
+                player.settings.network.preferredPeakBitRate = bitrate * 1024
+                updatePluginConfig()
+                let config = media.media()
+                if startPosition > 0 {
+                    config.startTime = TimeInterval(startPosition)
+                }
+                player.prepare(config)
+                updateBitrateSelector()
+                if mediaType == .Live{
+                    self.currentMediaType = .Live
+                    self.controlUI?.setIsLive()
+                } else {
+                    isLive(){response in
+                        DispatchQueue.main.async {
+                            if response {
+                                self.currentMediaType = .Live
+                                self.controlUI?.setIsLive()
+                            } else {
+                                self.currentMediaType = .VOD
+                                self.controlUI?.setIsVOD()
+                            }
+                        }
+                    }
+                }
                 player.play()
             }
         }

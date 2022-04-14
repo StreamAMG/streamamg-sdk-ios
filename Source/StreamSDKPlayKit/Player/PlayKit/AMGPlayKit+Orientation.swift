@@ -26,6 +26,11 @@ extension AMGPlayKit {
     func resizeScreen(){
         playerView?.frame = self.bounds
         controlUI?.frame = self.bounds
+        if #available(iOS 13.0, *) {
+            self.controlUI?.setFullScreen(UIDevice.current.orientation.isValidInterfaceOrientation ? UIDevice.current.orientation.isLandscape : (UIApplication.shared.windows.first?.windowScene?.interfaceOrientation.isLandscape ?? false))
+        } else {
+            self.controlUI?.setFullScreen(UIDevice.current.orientation.isValidInterfaceOrientation ? UIDevice.current.orientation.isLandscape : UIApplication.shared.statusBarOrientation.isLandscape)
+        }
         controlUI?.resize()
     }
     
@@ -34,7 +39,7 @@ extension AMGPlayKit {
             return
         }
         orientationTime = Date().timeIntervalSince1970
-        let value  = UIInterfaceOrientation.portrait.rawValue
+        let value = UIInterfaceOrientation.portrait.rawValue
         UIDevice.current.setValue(value, forKey: "orientation")
         UIViewController.attemptRotationToDeviceOrientation()
         controlUI?.setFullScreen(false)
@@ -47,7 +52,7 @@ extension AMGPlayKit {
             return
         }
         orientationTime = Date().timeIntervalSince1970
-        var value  = UIInterfaceOrientation.landscapeRight.rawValue
+        var value = UIInterfaceOrientation.landscapeRight.rawValue
         if UIApplication.shared.statusBarOrientation == .landscapeLeft {
             value = UIInterfaceOrientation.landscapeLeft.rawValue
         }

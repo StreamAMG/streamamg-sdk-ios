@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "StreamAMGSDK"
-  spec.version      = "1.0.4"
+  spec.version      = "1.1.0"
   spec.summary      = "Stream AMG SDK"
   spec.swift_versions = "5"
 
@@ -56,17 +56,17 @@ end
 
 spec.subspec 'PlayKit' do |playkit|
 playkit.source_files  = "Source/StreamSDKPlayKit/**/*.*"
-playkit.dependency 'PlayKit', '3.20.0'
-playkit.dependency 'PlayKit_IMA', '1.10.0'
-playkit.dependency 'PlayKitProviders', '1.11.0'
-playkit.dependency 'PlayKitYoubora', '1.9.0'
+playkit.dependency 'PlayKit', '3.25.0'
+playkit.dependency 'PlayKit_IMA', '1.11.0'
+playkit.dependency 'PlayKitProviders', '1.16.0'
+playkit.dependency 'PlayKitYoubora', '1.12.0'
 playkit.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.*'}
 end
 
 spec.subspec 'PlayKit2Go' do |playkit2go|
 playkit2go.source_files  = "Source/StreamSDKPlayKit2Go/**/*.*"
 playkit2go.dependency "StreamAMGSDK/PlayKit"
-playkit2go.dependency 'DownloadToGo', '3.15.0'
+playkit2go.dependency 'DownloadToGo', '3.17.0'
 end
 
 end

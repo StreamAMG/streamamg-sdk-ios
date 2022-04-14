@@ -28,7 +28,7 @@ import PlayKit
     // MARK: - Properties
     /************************************************************/
     
-    private let defaultBaseUrl = "http://stats.mp.streamamg.com/SessionUpdate"
+    private let defaultBaseUrl = "https://stats.mp.streamamg.com/SessionUpdate"
     
     /// application ID.
     let applicationId = Bundle.main.bundleIdentifier
