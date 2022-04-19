@@ -1,5 +1,5 @@
 
-StreamAMGSDK
+StreamAMGSDK   [![](https://img.shields.io/cocoapods/v/StreamAMGSDK)](https://github.com/StreamAMG/streamamg-sdk-ios)
 =========
 The StreamAMGSDK provides simple and efficient access to StreamAMG's APIs and services
 
