@@ -468,7 +468,7 @@ Please note it is no longer required to pass the UIConfig parameter to PlayKit.
 If you have provided the Partner ID to the PlayKit already, you do not need to pass this with each media request:
 
 ``` Swift
-public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, title: String?)
+public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, title: String?, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil, startPosition: Int64 = -1)
 ```
 for example:
 ``` Swift
@@ -477,7 +477,7 @@ playKit.loadMedia(serverUrl: "https://mymediaserver.com", entryId: "0_myEntryID"
 
 Or with a Partner ID
 ``` Swift
-public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, mediaType: AMGMediaType = .VOD, title: String?)
+public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, title: String?, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil, startPosition: Int64 = -1)
 ```
 for example:
 ``` Swift
@@ -650,6 +650,10 @@ PlayKit will atttempt to change bitrate to that value (or the closest one BELOW 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.1.1
+- Added startPosition to loadMedia
+- Download to Go compatible with Objective-C
 
 ### 1.1.0
 - Bitrate selector UI

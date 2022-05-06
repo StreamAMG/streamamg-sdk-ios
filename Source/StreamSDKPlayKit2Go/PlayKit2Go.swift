@@ -9,15 +9,18 @@ import Foundation
 import DownloadToGo
 import PlayKit
 
-public class PlayKit2Go: ContentManagerDelegate {
+@objc public class PlayKit2Go: NSObject, ContentManagerDelegate {
     
-    public static let instance = PlayKit2Go()
+    @objc public static let instance = PlayKit2Go()
     let cm = ContentManager.shared
     let lam = LocalAssetsManager.managerWithDefaultDataStore()
     weak var delegate: PlayKit2GoDelegate? = nil
     
     private var allValidIDs: [String] = []
-    private init() {
+    
+    
+    private override init() {
+        super.init()
         cm.delegate = self
     }
     
@@ -33,7 +36,7 @@ public class PlayKit2Go: ContentManagerDelegate {
         }
     }
     
-    public func handleEventsForBackgroundURLSession(identifier: String, completionHandler: @escaping () -> Void){
+    @objc public func handleEventsForBackgroundURLSession(identifier: String, completionHandler: @escaping () -> Void){
         ContentManager.shared.handleEventsForBackgroundURLSession(identifier: identifier, completionHandler: completionHandler)
     }
     
