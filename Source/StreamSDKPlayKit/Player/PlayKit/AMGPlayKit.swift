@@ -391,14 +391,21 @@ import AVKit
         }
     }
     
-    private func loadMedia(media: MediaItem, mediaType: AMGMediaType){
+    internal func loadMedia(media: MediaItem, mediaType: AMGMediaType, startPosition: Int64 = -1, bitrate: Double? = nil){
         currentMedia = media
         currentMediaType = mediaType
         player?.pause()
         if partnerID > 0{
             if let player = player {
+                if (bitrate != nil) {
+                    player.settings.network.preferredPeakBitRate = bitrate! * 1024
+                }
                 updatePluginConfig()
-                player.prepare(media.media())
+                let config = media.media()
+                if startPosition >= 0 {
+                    config.startTime = TimeInterval(startPosition)
+                }
+                player.prepare(config)
                 updateBitrateSelector()
                 if mediaType == .Live{
                     self.currentMediaType = .Live
@@ -422,41 +429,6 @@ import AVKit
         }
     }
     
-    internal func loadMedia(media: MediaItem, mediaType: AMGMediaType, startPosition: Int64, bitrate: Double){
-        currentMedia = media
-        currentMediaType = mediaType
-        player?.pause()
-        if partnerID > 0{
-            if let player = player {
-                player.settings.network.preferredPeakBitRate = bitrate * 1024
-                updatePluginConfig()
-                let config = media.media()
-                if startPosition > 0 {
-                    config.startTime = TimeInterval(startPosition)
-                }
-                player.prepare(config)
-                updateBitrateSelector()
-                if mediaType == .Live{
-                    self.currentMediaType = .Live
-                    self.controlUI?.setIsLive()
-                } else {
-                    isLive(){response in
-                        DispatchQueue.main.async {
-                            if response {
-                                self.currentMediaType = .Live
-                                self.controlUI?.setIsLive()
-                            } else {
-                                self.currentMediaType = .VOD
-                                self.controlUI?.setIsVOD()
-                            }
-                        }
-                    }
-                }
-                player.play()
-            }
-        }
-    }
-    
     /**
      Queues and runs the specified media item if available
      
@@ -465,7 +437,7 @@ import AVKit
      - entryID: The unique ID for the media item, as specified by StreamAMG
      - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
-    public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, title: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+    public func loadMedia(serverUrl: String, entryID: String, ks: String? = nil, title: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil, startPosition: Int64 = -1){
         var kalturaMediaType: MediaType = .vod
         switch mediaType {
         case .Live, .Live_Audio:
@@ -477,7 +449,7 @@ import AVKit
         }
         
         if partnerID > 0{
-            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType)
+            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType, startPosition: startPosition)
         } else {
             print("Please provide a PartnerID with the request, add a default with 'addPartnerID(partnerID:Int)' or set a default in the initialiser")
         }
@@ -492,9 +464,9 @@ import AVKit
      - entryID: The unique ID for the media item, as specified by StreamAMG
      - ks: If the media requires a KS to play, it should be passed here, otherwise this should be `nil` or completely ommitted
      */
-    public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, title: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil){
+    public func loadMedia(serverUrl: String, partnerID: Int, entryID: String, ks: String? = nil, title: String? = nil, mediaType: AMGMediaType = .VOD, drmLicenseURI: String? = nil, drmFPSCertificate: String? = nil, startPosition: Int64 = -1){
         self.partnerID = partnerID
-        loadMedia(serverUrl: serverUrl, entryID: entryID, ks: ks, title: title, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate)
+        loadMedia(serverUrl: serverUrl, entryID: entryID, ks: ks, title: title, mediaType: mediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate, startPosition: startPosition)
     }
     
     // IMA

@@ -42,10 +42,8 @@ extension AMGPlayKit {
         }
     }
     
-    func setMaximumBitrate(bitrate: Double){
-        if let media = currentMedia {
-            loadMedia(media: media, mediaType: currentMediaType, startPosition: Int64(player?.currentTime ?? 0), bitrate: bitrate)
-        }
+    public func setMaximumBitrate(bitrate: Double){
+        player?.settings.network.preferredPeakBitRate = bitrate
     }
     
     func updateBitrateSelector(){
