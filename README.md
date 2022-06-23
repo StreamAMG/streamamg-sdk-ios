@@ -102,6 +102,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.1.2 - Updated IAP package API.
+
 ### 1.1.1 - PlayKit minor update
 
 ### 1.1.0 - PlayKit bitrate selector UI

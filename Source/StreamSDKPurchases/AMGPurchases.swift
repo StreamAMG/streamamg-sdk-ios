@@ -128,7 +128,7 @@ public class AMGPurchases: IAPDelegate {
         if let products = withProducts, !products.isEmpty{
             fetchPackages(withProducts: products)
         } else {
-            StreamAMGSDK.sendRequest("\(apiURL)api/v1/package"){ (result: Result<PurchasePackagesResponse, StreamAMGError>) in
+            StreamAMGSDK.sendRequest("\(apiURL)api/v1/package?type=iap"){ (result: Result<PurchasePackagesResponse, StreamAMGError>) in
                 switch result {
                 case .success(let data):
                     self.fetchPackages(withProducts: data.packages())
