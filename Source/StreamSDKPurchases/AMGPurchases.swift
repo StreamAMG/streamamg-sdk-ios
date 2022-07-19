@@ -42,7 +42,7 @@ public class AMGPurchases: IAPDelegate {
         iapService.stopObserving()
       }
     
-    public func validatePurchase() {
+    public func validatePurchase(payment: ReceiptPaymentModel?) {
            guard
              let receiptUrl = Bundle.main.appStoreReceiptURL,
              let receiptData = try? Data(contentsOf: receiptUrl),
@@ -53,7 +53,7 @@ public class AMGPurchases: IAPDelegate {
            
            let receiptBase64 = receiptData.base64EncodedString(options: [])
        
-        let request = ReceiptModel(base64EncodedReceipt: receiptBase64)
+        let request = ReceiptModel(base64EncodedReceipt: receiptBase64, payment: payment)
         do {
         let body = try JSONEncoder().encode(request)
 

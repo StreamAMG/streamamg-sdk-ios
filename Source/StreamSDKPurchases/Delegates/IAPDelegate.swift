@@ -9,5 +9,5 @@ import Foundation
 
 internal protocol IAPDelegate {
     func updateIAPUI()
-    func validatePurchase()
+    func validatePurchase(payment: ReceiptPaymentModel?)
 }

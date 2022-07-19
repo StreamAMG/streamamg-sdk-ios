@@ -20,8 +20,28 @@ public class IAPService: NSObject, SKPaymentTransactionObserver {
             switch transaction.transactionState {
             case .purchased:
                 onBuyProductHandler?(.success(true))
-                delegate?.validatePurchase()
-                    SKPaymentQueue.default().finishTransaction(transaction)
+                let productIdentifier =  transaction.payment.productIdentifier
+                var country : String? = nil
+                var currency : String? = nil
+                var amount : Float? = nil
+                var discount : Float? = nil
+                if #available(iOS 12.2, *) {
+                    if let purchasedProduct = skuList.first(where: {$0.productIdentifier == productIdentifier}) {
+                        country = purchasedProduct.priceLocale.regionCode
+                        currency = purchasedProduct.priceLocale.currencyCode
+                        amount = purchasedProduct.price.floatValue
+                        if let appliedDiscountIdentifier = transaction.payment.paymentDiscount?.identifier {
+                            if let appliedDiscount = purchasedProduct.discounts.first(where: {$0.identifier == appliedDiscountIdentifier}) {
+                                discount = appliedDiscount.price.floatValue
+                            }
+                        }
+                    }
+                } else {
+                    // Fallback on earlier versions
+                }
+                let paymentModel = ReceiptPaymentModel(countryCode: country , currencyCode: currency , amount: amount, discount: discount)
+                delegate?.validatePurchase(payment: paymentModel)
+                SKPaymentQueue.default().finishTransaction(transaction)
                 
             case .restored:
                 break
