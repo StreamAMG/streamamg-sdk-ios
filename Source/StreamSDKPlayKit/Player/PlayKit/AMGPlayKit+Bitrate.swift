@@ -36,22 +36,29 @@ extension AMGPlayKit {
         }
     }
     
-    public func setMaximumBitrate(bitrate: Int64){
+    public func setBitrateAuto() {
+        setMaximumBitrate(bitrate: listBitrate?.last)
+    }
+    
+    public func setMaximumBitrate(bitrate: FlavorAsset?){
         if let media = currentMedia {
-            loadMedia(media: media, mediaType: currentMediaType, startPosition: Int64(player?.currentTime ?? 0), bitrate: Double(bitrate))
+            loadMedia(media: media, mediaType: currentMediaType, startPosition: Int64(player?.currentTime ?? 0), bitrate: bitrate)
         }
     }
     
+    @available(*, deprecated, message: "Use the new setMaximumBitrate(bitrate: FlavorAsset?) method")
     public func setMaximumBitrate(bitrate: Double){
         player?.settings.network.preferredPeakBitRate = bitrate
     }
     
-    func updateBitrateSelector(){
+    func updateBitrateSelector(completion: @escaping (([FlavorAsset]?) -> Void)) {
         fetchContextData {data in
             if let data = data {
                 self.controlUI?.createBitrateSelector(withBitrateList: data.fetchBitrates())
+                completion(data.fetchBitrates())
             } else {
                 self.controlUI?.createBitrateSelector(withBitrateList: [])
+                completion(nil)
             }
         }
     }

@@ -20,7 +20,7 @@ public protocol AMGPlayerDelegate: AnyObject {
     
     func minimise()
     func fullScreen()
-    func setMaximumBitrate(bitrate: Int64)
+    func setMaximumBitrate(bitrate: FlavorAsset?)
 }
 
 

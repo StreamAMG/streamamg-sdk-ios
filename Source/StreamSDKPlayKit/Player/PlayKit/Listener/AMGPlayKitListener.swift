@@ -13,4 +13,5 @@ public protocol AMGPlayKitListener: AnyObject {
     func loadChangeStateOccurred(state: AMGPlayKitState)
     func durationChangeOccurred(state: AMGPlayKitState)
     func errorOccurred(error: AMGPlayKitError)
+    func bitrateChangeOccurred(list: [FlavorAsset]?)
 }
