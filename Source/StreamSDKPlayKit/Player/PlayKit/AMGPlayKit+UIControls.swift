@@ -75,7 +75,7 @@ extension AMGPlayKit {
         controlVisibleTimer = Timer.scheduledTimer(timeInterval: controlVisibleDuration, target: self, selector: #selector(hideControls), userInfo: nil, repeats: false)
     }
     
-    @objc func hideControls(){
+    @objc public func hideControls(){
         controlUI?.showControls(false)
     }
     

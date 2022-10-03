@@ -82,9 +82,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     
     private var bottomTrackEnabled = false
     
-    var bitrates: [Int64] = []
-    var selectedBitrate = 0
-    var bitrateColors: [UIColor] = []
+    private var bitrates: [FlavorAsset] = []
+    private var selectedBitrate = 0
+    private var bitrateColors: [UIColor] = []
     
     var bitrateScroll: UIScrollView = UIScrollView(frame: .zero) // UIView = UIView()
 
@@ -641,7 +641,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     
     
     
-    func createBitrateSelector(withBitrateList: [Int64]){
+    func createBitrateSelector(withBitrateList: [FlavorAsset]){
         bitrates = withBitrateList
         let maxWidth: CGFloat = 165
         var count = 1
@@ -656,8 +656,8 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             self.bitrateScroll.layer.cornerRadius = 8
             
             self.createBitrateLabel(text: "Auto", width: maxWidth, index: 0)
-            withBitrateList.forEach {bitrate in
-                self.createBitrateLabel(text: "\(bitrate)", width: maxWidth, index: count)
+            withBitrateList.forEach { bitrate in
+                self.createBitrateLabel(text: "\(bitrate.bitrate ?? 0)", width: maxWidth, index: count)
                 count += 1
             }
             self.bitrateView?.addSubview(self.bitrateScroll)

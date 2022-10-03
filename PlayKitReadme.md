@@ -415,6 +415,16 @@ To use this control class, you should add it to your Play Kit set up code:
     playKit.setControlDelegate(self)
 ```
 
+## Custom Overlays
+The AMG Playkit supports adding custom overlays on top of player view. This can be utilised to display custom views on top of the media. For isntance to add custom controls on player view you can create a overlay view with custom controls and place it on top of player view as below,
+
+``` Swift
+        let customControls = CustomPlayerControls(frame: CGRect(x: 0, y: 0, width: *width*, height: *height*))
+        customControls.player = self.playKit
+        self.playKit?.playerView?.addSubview(customControls)
+```
+
+
 ## Play Kit orientation
 
 The AMG Play Kit can be displayed in portrait mode or full screen landscape mode.
@@ -534,6 +544,10 @@ func durationChangeOccurred(state: AMGPlayKitState) {
 func errorOccurred(error: AMGPlayKitError) {
     print("errorOccurred - \(error.errorCode) - \(error.errorMessage)")
 }
+
+func bitrateChangeOccurred(list: [FlavorAsset]?) {
+    print("bitrateChangeOccurred: \n \(String(describing: list))")
+}
 ```
 
 You must conform to using the above functions when creating your listener.
@@ -642,10 +656,17 @@ amgPlayKit?.setSpoilerFree(enabled: true) // true = spoiler free mode on, false 
 To instruct PlayKit to use a certain highest bitrate when streaming, you can use the following function:
 
 ``` Swift
-amgPlayKit?.setMaximumBitrate(bitrate: Double)
+amgPlayKit?.setMaximumBitrate(bitrate: FlavorAsset?)
 ```
 
-PlayKit will atttempt to change bitrate to that value (or the closest one BELOW that value) for the rest of the stream.
+PlayKit will atttempt to change bitrate to that value (or the closest one BELOW that value) for the rest of the stream. This change may not be immediate.
+
+PlayKit has a listener (`AMGPlayKitListener`) that contains a method (`bitrateChangeOccurred`) that gives you the list of bitrate when available:
+``` Swift
+func bitrateChangeOccurred(list: [FlavorAsset]?) {
+    
+}
+```
 
 # Change Log
 

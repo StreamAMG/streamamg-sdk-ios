@@ -64,6 +64,7 @@ import AVKit
     private var currentAdvert = ""
     
     var tap: UITapGestureRecognizer? = nil
+    var listBitrate: [FlavorAsset]? = []
     
     /**
      Standard initialisation
@@ -169,6 +170,10 @@ import AVKit
     
     public func setPlayKitListener(listener: AMGPlayKitListener) {
         self.listener = listener
+    }
+    
+    public func addOverlayView(overlay: UIView!) {
+        self.playerView?.addSubview(overlay)
     }
     
     func constructPlayKit() {
@@ -391,14 +396,14 @@ import AVKit
         }
     }
     
-    internal func loadMedia(media: MediaItem, mediaType: AMGMediaType, startPosition: Int64 = -1, bitrate: Double? = nil){
+    internal func loadMedia(media: MediaItem, mediaType: AMGMediaType, startPosition: Int64 = -1, bitrate: FlavorAsset? = nil){
         currentMedia = media
         currentMediaType = mediaType
         player?.pause()
         if partnerID > 0{
             if let player = player {
-                if (bitrate != nil) {
-                    player.settings.network.preferredPeakBitRate = bitrate! * 1024
+                if (bitrate?.bitrate != nil) {
+                    player.settings.network.preferredPeakBitRate = (Double)((bitrate?.bitrate)! * 1024)
                 }
                 updatePluginConfig()
                 let config = media.media()
@@ -406,7 +411,12 @@ import AVKit
                     config.startTime = TimeInterval(startPosition)
                 }
                 player.prepare(config)
-                updateBitrateSelector()
+                updateBitrateSelector { bitrates in
+                    if self.listBitrate != bitrates {
+                        self.listener?.bitrateChangeOccurred(list: bitrates)
+                    }
+                    self.listBitrate = bitrates
+                }
                 if mediaType == .Live{
                     self.currentMediaType = .Live
                     self.controlUI?.setIsLive()
