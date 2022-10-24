@@ -54,10 +54,14 @@ extension AMGPlayKit {
     func updateBitrateSelector(completion: @escaping (([FlavorAsset]?) -> Void)) {
         fetchContextData {data in
             if let data = data {
-                self.controlUI?.createBitrateSelector(withBitrateList: data.fetchBitrates())
+                DispatchQueue.main.async {
+                    self.controlUI?.createBitrateSelector(withBitrateList: data.fetchBitrates())
+                }
                 completion(data.fetchBitrates())
             } else {
-                self.controlUI?.createBitrateSelector(withBitrateList: [])
+                DispatchQueue.main.async {
+                    self.controlUI?.createBitrateSelector(withBitrateList: [])
+                }
                 completion(nil)
             }
         }
