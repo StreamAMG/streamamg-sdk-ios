@@ -11,6 +11,7 @@ import UIKit
 
 extension AMGPlayKit {
     
+    
     override public var bounds: CGRect {
         didSet {
             resizeScreen()
@@ -24,43 +25,73 @@ extension AMGPlayKit {
     }
     
     func resizeScreen(){
+        
         playerView?.frame = self.bounds
         controlUI?.frame = self.bounds
-        if #available(iOS 13.0, *) {
-            self.controlUI?.setFullScreen(UIDevice.current.orientation.isValidInterfaceOrientation ? UIDevice.current.orientation.isLandscape : (UIApplication.shared.windows.first?.windowScene?.interfaceOrientation.isLandscape ?? false))
+        
+        var isInFullScreen = false
+        /// Checking current player rotation status
+        if UIApplication.shared.statusBarOrientation.isLandscape {
+            isInFullScreen = true
         } else {
-            self.controlUI?.setFullScreen(UIDevice.current.orientation.isValidInterfaceOrientation ? UIDevice.current.orientation.isLandscape : UIApplication.shared.statusBarOrientation.isLandscape)
+            isInFullScreen = false
         }
+        
+        self.controlUI?.setFullScreen(isInFullScreen)
+        
         controlUI?.resize()
     }
     
     public func minimise() {
-        if orientationTime > Date().timeIntervalSince1970 - 1.0 {
-            return
+        DispatchQueue.main.async { [self] in
+            if orientationTime > Date().timeIntervalSince1970 - 1.0 {
+                return
+            }
+            orientationTime = Date().timeIntervalSince1970
+            
+            if #available(iOS 16.0, *) {
+                let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+                windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+                UIApplication.shared.inputViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+                UIApplication.shared.inputViewController?.navigationController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+            } else {
+                let value = UIInterfaceOrientation.portrait.rawValue
+                UIDevice.current.setValue(value, forKey: "orientation")
+                UIViewController.attemptRotationToDeviceOrientation()
+            }
+            
+            resizeScreen()
+            playerView?.layoutIfNeeded()
         }
-        orientationTime = Date().timeIntervalSince1970
-        let value = UIInterfaceOrientation.portrait.rawValue
-        UIDevice.current.setValue(value, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
-        controlUI?.setFullScreen(false)
-        resizeScreen()
-        playerView?.layoutIfNeeded()
     }
     
     public func fullScreen() {
-        if orientationTime > Date().timeIntervalSince1970 - 1.0 {
-            return
+        DispatchQueue.main.async {
+            if self.orientationTime > Date().timeIntervalSince1970 - 1.0 {
+                return
+            }
+            
+            self.orientationTime = Date().timeIntervalSince1970
+            
+            if #available(iOS 16.0, *) {
+                let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+                let orientation = windowScene?.interfaceOrientation
+                windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: orientation == .portrait ? .landscape : .portrait))
+                UIApplication.shared.inputViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+                UIApplication.shared.inputViewController?.navigationController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+            } else {
+                var value = UIInterfaceOrientation.landscapeRight.rawValue
+                if UIApplication.shared.statusBarOrientation == .landscapeLeft {
+                    value = UIInterfaceOrientation.landscapeLeft.rawValue
+                }
+                
+                UIDevice.current.setValue(value, forKey: "orientation")
+                UIViewController.attemptRotationToDeviceOrientation()
+            }
+            
+            self.resizeScreen()
+            self.playerView?.layoutIfNeeded()
         }
-        orientationTime = Date().timeIntervalSince1970
-        var value = UIInterfaceOrientation.landscapeRight.rawValue
-        if UIApplication.shared.statusBarOrientation == .landscapeLeft {
-            value = UIInterfaceOrientation.landscapeLeft.rawValue
-        }
-        UIDevice.current.setValue(value, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
-        controlUI?.setFullScreen(true)
-        resizeScreen()
-        playerView?.layoutIfNeeded()
     }
     
 }

@@ -102,6 +102,12 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.1.5 - Fixed rotation issue on iOS 16
+
+### 1.1.4 - Improved PlayKit
+
+### 1.1.3 - Enhanced IAP raw receipt
+
 ### 1.1.2 - Updated IAP package API.
 
 ### 1.1.1 - PlayKit minor update

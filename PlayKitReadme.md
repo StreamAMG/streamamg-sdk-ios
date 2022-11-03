@@ -672,6 +672,24 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 
 All notable changes to this project will be documented in this section.
 
+### 1.1.5
+- Fixed rotation issue on iOS 16
+
+### 1.1.4
+- Switched bitrate from Int64 to FlavorAsset class
+- Added callback to updateBitrateSelector
+- Exposed list of bitrate through AMGPlayKitListener. bitrateChangeOccurred
+- Added setBitrateAuto function
+- Deprecated setMaximumBitrate(bitrate: Double)
+- Change the hide custom controls method visibility to Public
+- Created a new interface to add custom views on top of Playerview
+
+### 1.1.3
+- Enhanced IAP raw receipt
+
+### 1.1.2
+- Updated IAP package API.
+
 ### 1.1.1
 - Added startPosition to loadMedia
 - Download to Go compatible with Objective-C
