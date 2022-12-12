@@ -51,6 +51,8 @@ import AVKit
     
     weak var listener: AMGPlayKitListener? = nil
     
+    weak var controlsListener: AMGPlayKitControlsListener? = nil
+    
     private var playerState: PlayerState? = nil
     
     weak internal var pipDelegate: AMGPictureInPictureDelegate?
@@ -117,6 +119,7 @@ import AVKit
      */
     public func addPartnerID(partnerId: Int){
         partnerID = partnerId
+        AMGAnalyticsPlugin.setPartnerID(partnerId)
     }
     
     /**
@@ -128,6 +131,62 @@ import AVKit
      */
     public func setAnalyticsURL(_ url: String) {
         AMGAnalyticsPlugin.setAnalyticsURL(url)
+    }
+    
+    /**
+     Set user device type.
+     
+     Should only be used if targetting a secondary or non-standard analytics server
+     
+     - Parameter userDeviceType: User device type.
+     */
+    public func setAnalyticsDeviceType(_ userLocation: String) {
+        AMGAnalyticsPlugin.setUserDeviceType(userLocation)
+    }
+    
+    /**
+     Set user location for analytics events.
+     
+     Should only be used if targetting a secondary or non-standard analytics server
+     
+     - Parameter userLocation: User location String.
+     */
+    public func setAnalyticsuserLocation(_ userLocation: String) {
+        AMGAnalyticsPlugin.setUserLocation(userLocation)
+    }
+    
+    /**
+     Set custom header for the Analytics API.
+     
+     Should only be used if targetting a secondary or non-standard analytics server
+     
+     - Parameter requestHeader: Dictionary of header keys and value.
+     */
+    public func setAnalyticsCustomHeader(_ requestHeader: [String:String]) {
+        AMGAnalyticsPlugin.setAnalyticsCustomHeader(requestHeader)
+    }
+    
+    /**
+     Set the request method if POST or GET.
+     
+     Should only be used if targetting a secondary or non-standard analytics server
+     
+     - Parameter requestMethod: String can be type POST or GET.
+     */
+    public func setAnalyticsRequestMethod(_ requestMethod: String) {
+        
+        switch requestMethod.uppercased() {
+        case "GET":
+            AMGAnalyticsPlugin.setAnalyticsRequestMethod(.get)
+            break
+        case "POST":
+            AMGAnalyticsPlugin.setAnalyticsRequestMethod(.post)
+            break
+            
+        default:
+            print("StreamAMGSDK: Value for setAnalyticsRequestMethod not accepted.")
+            break
+        }
     }
     
     /**

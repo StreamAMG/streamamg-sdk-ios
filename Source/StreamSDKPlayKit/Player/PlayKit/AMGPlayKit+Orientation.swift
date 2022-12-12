@@ -25,25 +25,34 @@ extension AMGPlayKit {
     }
     
     func resizeScreen(){
-        
-        playerView?.frame = self.bounds
-        controlUI?.frame = self.bounds
-        
-        var isInFullScreen = false
-        /// Checking current player rotation status
-        if UIApplication.shared.statusBarOrientation.isLandscape {
-            isInFullScreen = true
-        } else {
-            isInFullScreen = false
+        DispatchQueue.main.async { [self] in
+            if self.controlsListener != nil {
+                return
+            }
+            playerView?.frame = self.bounds
+            controlUI?.frame = self.bounds
+            var isInFullScreen = false
+            /// Checking current player rotation status
+            if UIApplication.shared.statusBarOrientation.isLandscape {
+                isInFullScreen = true
+            } else {
+                isInFullScreen = false
+            }
+            
+            self.controlUI?.setFullScreen(isInFullScreen)
+            
+            controlUI?.resize()
         }
-        
-        self.controlUI?.setFullScreen(isInFullScreen)
-        
-        controlUI?.resize()
     }
     
     public func minimise() {
         DispatchQueue.main.async { [self] in
+            
+            if let controlsListener = self.controlsListener {
+                controlsListener.onMinimiseClicked()
+                return
+            }
+            
             if orientationTime > Date().timeIntervalSince1970 - 1.0 {
                 return
             }
@@ -67,6 +76,12 @@ extension AMGPlayKit {
     
     public func fullScreen() {
         DispatchQueue.main.async {
+            
+            if let controlsListener = self.controlsListener {
+                controlsListener.onFullScreenClicked()
+                return
+            }
+            
             if self.orientationTime > Date().timeIntervalSince1970 - 1.0 {
                 return
             }
@@ -88,7 +103,6 @@ extension AMGPlayKit {
                 UIDevice.current.setValue(value, forKey: "orientation")
                 UIViewController.attemptRotationToDeviceOrientation()
             }
-            
             self.resizeScreen()
             self.playerView?.layoutIfNeeded()
         }

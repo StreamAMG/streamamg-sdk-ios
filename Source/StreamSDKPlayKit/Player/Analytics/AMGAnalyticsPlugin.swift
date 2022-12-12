@@ -17,9 +17,15 @@ import SwiftyJSON
  */
 public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
     
-
+    
     private static var partnerID = 0
+    private static var userLocation: String?
+    private static var deviceType: String?
+    
     private static var baseURL = "https://stats.mp.streamamg.com/SessionUpdate?"
+    
+    private static var requestMethod: RequestMethod = .get
+    private static var requestHeader: [String:String] = [:]
     
     // MARK: - Private local variables
     
@@ -47,7 +53,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
     /************************************************************/
     
     public var isFirstPlay: Bool = true
-
+    
     public override class var pluginName: String {
         return "AMGAnalyticsPlugin"
     }
@@ -60,7 +66,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         self.registerEvents()
     }
     
-
+    
     public override func onUpdateMedia(mediaConfig: MediaConfig) {
         super.onUpdateMedia(mediaConfig: mediaConfig)
         
@@ -68,7 +74,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         self.isFirstPlay = true
     }
     
-
+    
     public override func destroy() {
         
         
@@ -81,18 +87,26 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
     
     /// default events to register
     public var playerEventsToRegister: [PlayerEvent.Type] {
-//        return [
-//            PlayerEvent.ended,
-//            PlayerEvent.error,
-//            PlayerEvent.pause,
-//            PlayerEvent.stopped,
-//            PlayerEvent.loadedMetadata,
-//            PlayerEvent.playing,
-//            PlayerEvent.sourceSelected,
-//            PlayerEvent.stateChanged,
-//            PlayerEvent.playheadUpdate
-//        ]
+        //        return [
+        //            PlayerEvent.ended,
+        //            PlayerEvent.error,
+        //            PlayerEvent.pause,
+        //            PlayerEvent.stopped,
+        //            PlayerEvent.loadedMetadata,
+        //            PlayerEvent.playing,
+        //            PlayerEvent.sourceSelected,
+        //            PlayerEvent.stateChanged,
+        //            PlayerEvent.playheadUpdate
+        //        ]
         PlayerEvent.allEventTypes
+    }
+    
+    public static func setUserLocation(_ location: String) {
+        userLocation = location
+    }
+    
+    public static func setUserDeviceType(_ userDevice: String) {
+        deviceType = userDevice
     }
     
     public static func setPartnerID(_ id: Int) {
@@ -103,11 +117,19 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         baseURL = url
     }
     
+    public static func setAnalyticsCustomHeader(_ requestHeader: [String:String]) {
+        self.requestHeader = requestHeader
+    }
+    
+    public static func setAnalyticsRequestMethod(_ requestMethod: RequestMethod) {
+        self.requestMethod = requestMethod
+    }
+    
     public func registerEvents() {
         PKLog.debug("plugin \(type(of:self)) register to all player events")
         
         self.playerEventsToRegister.forEach { event in
-  //          PKLog.debug("Register event: \(event.self)")
+            //          PKLog.debug("Register event: \(event.self)")
             switch event {
             case let e where e.self == PlayerEvent.ended:
                 self.messageBus?.addObserver(self, events: [e.self]) { [weak self] event in
@@ -148,7 +170,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                     guard let self = self else { return }
                     if let timeTo = self.player?.currentTime{
                         if self.seekTimeStarted == nil {
-                        self.seekTimeStarted = timeTo
+                            self.seekTimeStarted = timeTo
                         }
                     }
                     self.sendEvent(event: event, eventID: 9)
@@ -189,7 +211,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                     }
                     if (self.timeStamp + 6 < Date().timeIntervalSince1970){
                         self.timeStamp = Date().timeIntervalSince1970
-                    self.sendEvent(event: event)
+                        self.sendEvent(event: event)
                     }
                 }
             case let e where e.self == PlayerEvent.playing:
@@ -201,14 +223,14 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
             case let e where e.self == PlayerEvent.sourceSelected:
                 self.messageBus?.addObserver(self, events: [e.self]) { [weak self] event in
                     guard let self = self else { return }
-                   // guard let mediaSource = event.mediaSource else { return }
+                    // guard let mediaSource = event.mediaSource else { return }
                     self.sendEvent(event: event)
                 }
             default:
-            break
+                break
             }
         }
-
+        
     }
     
     func errorFromEvent(event: PKEvent) -> Int {
@@ -222,7 +244,7 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
                 return 4 //
             }
         }
-    return 2
+        return 2
     }
     
     func sendEvent(event: PKEvent, eventID: Int = 0) {
@@ -247,34 +269,45 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         guard let mediaEntry = player.mediaEntry else {
             throw AMGAnalyticsError.noMediaEntry
         }
-//        guard let config = config else {
-//            throw AMGAnalyticsError.noConfig
-//        }
+        //        guard let config = config else {
+        //            throw AMGAnalyticsError.noConfig
+        //        }
         
         
         timeStamp = Date().timeIntervalSince1970
         
         let request = AMGAnalyticsRequest(
-                              sessionID: sessionID,
-                              entryID: mediaEntry.id,
-                              partnerID: AMGAnalyticsPlugin.partnerID,
-                              //uiConfID: nil, // No longer required
-                              //kSession: nil, // No longer required
-                              heatmap: heatMap.report(),
-                              entryDuration: Int64(heatMap.duration * 1000),   //mediaEntry.duration,
-                              connectedDuration: heatMap.connectionDuration(),
-                              playedDuration: heatMap.durationPlayed(),
-                              videoLoadStatus: currentLoadStatus,
-                              referrerURL: nil,
-                              videoEvent: eventID,
-                              //username: nil, // We really shoudn't be sending usernames
-                              videoLoadTime: nil,
-                              timeStamp: Date())
+            sessionID: sessionID,
+            entryID: mediaEntry.id,
+            partnerID: AMGAnalyticsPlugin.partnerID,
+            //uiConfID: nil, // No longer required
+            //kSession: nil, // No longer required
+            heatmap: heatMap.report(),
+            entryDuration: Int64(heatMap.duration * 1000),   //mediaEntry.duration,
+            connectedDuration: heatMap.connectionDuration(),
+            playedDuration: heatMap.durationPlayed(),
+            videoLoadStatus: currentLoadStatus,
+            referrerURL: nil,
+            videoEvent: eventID,
+            //username: nil, // We really shoudn't be sending usernames
+            videoLoadTime: nil,
+            timeStamp: Date(),
+            userLocation: AMGAnalyticsPlugin.userLocation,
+            deviceType: AMGAnalyticsPlugin.deviceType
+        )
         
         let requestBuilder = try request.requestBuilder()
         requestBuilder.responseSerializer = AMGAnalyticsResponseSerializer()
         
         requestBuilder.set { [weak self] (response) in
+            // print("Status code: \(response.statusCode)")
+            // print("Status code: \(response.error.debugDescription)")
+            // print("Status code: \(response.error?.localizedDescription ?? "Status code NA")")
+            
+            // if response.statusCode == 200 {
+            // print("Request OK")
+            // }
+            
             if let amgResponse = response.data as? AMGAnalyticsResponse {
                 switch amgResponse {
                 case .success(let sessionID):
@@ -329,6 +362,8 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         let videoEvent: Int
         let videoLoadTime: Int?
         let timeStamp: Date
+        let userLocation: String?
+        let deviceType: String?
         
         enum CodingKeys: String, CodingKey {
             case sessionID = "sid"
@@ -343,7 +378,9 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
             case videoLoadStatus = "vls"
             case videoEvent = "vnt"
             case timeStamp = "tsp"
-
+            case userLocation = "user_location"
+            case deviceType = "device"
+            
             
         }
         
@@ -353,63 +390,75 @@ public class AMGAnalyticsPlugin: BasePlugin, AnalyticsPluginProtocol {
         
         func requestBuilder() throws -> RequestBuilder {
             
-            
-            
             guard let requestBuilder = RequestBuilder(url: baseURL) else {
                 throw AMGAnalyticsError.unableToCreateRequestBuilder
             }
             
             if !sessionID.isEmpty{
-            requestBuilder.setParam(key: "sid", value: sessionID)
+                requestBuilder.setParam(key: "sid", value: sessionID)
             }
+            
             requestBuilder.setParam(key: "eid", value: entryID)
             requestBuilder.setParam(key: "dhm", value: heatmap)
             requestBuilder.setParam(key: "pid", value: "\(partnerID)")
             if let entryDuration = entryDuration{
-            requestBuilder.setParam(key: "den", value: "\(entryDuration)")
+                requestBuilder.setParam(key: "den", value: "\(entryDuration)")
             }
-                if let connectedDuration = connectedDuration{
-            requestBuilder.setParam(key: "dcn", value: "\(connectedDuration)")
-                }
-                    if let playedDuration = playedDuration{
-            requestBuilder.setParam(key: "dpl", value: "\(playedDuration)")
-                    }
+            if let connectedDuration = connectedDuration{
+                requestBuilder.setParam(key: "dcn", value: "\(connectedDuration)")
+            }
+            if let playedDuration = playedDuration{
+                requestBuilder.setParam(key: "dpl", value: "\(playedDuration)")
+            }
             if let referrerURL = referrerURL{
-            requestBuilder.setParam(key: "rurl", value: referrerURL)
+                requestBuilder.setParam(key: "rurl", value: referrerURL)
             }
-                        
-                        if let videoLoadTime = videoLoadTime{
-            requestBuilder.setParam(key: "vlt", value: "\(videoLoadTime)")
-                        }
-                            if let videoLoadStatus = videoLoadStatus{
-            requestBuilder.setParam(key: "vls", value: "\(videoLoadStatus)")
-                            }
+            
+            if let videoLoadTime = videoLoadTime{
+                requestBuilder.setParam(key: "vlt", value: "\(videoLoadTime)")
+            }
+            if let videoLoadStatus = videoLoadStatus{
+                requestBuilder.setParam(key: "vls", value: "\(videoLoadStatus)")
+            }
             requestBuilder.setParam(key: "vnt", value: "\(videoEvent)")
             requestBuilder.setParam(key: "tsp", value: "\(timeStamp)")
-
             
-           // requestBuilder.method = .post
-//            requestBuilder.method = .get
-//            requestBuilder.add(headerKey: "Content-Type", headerValue: "application/json")
-//            let encoder = JSONEncoder()
-//            encoder.dateEncodingStrategy = .iso8601
-//            if let json = try? encoder.encode(AMGAnalyticsRequestWrapper(data: self)), let body = String(data: json, encoding: .utf8){
-//                let swiftyJson = JSON(parseJSON: body)
-//                requestBuilder.jsonBody = swiftyJson
-//                }
+            for value in requestHeader {
+                requestBuilder.add(headerKey: value.key, headerValue: value.value)
+            }
+            
+            if requestMethod == .post {
+                
+                if let userLocationExist = userLocation {
+                    requestBuilder.setParam(key: "user_location", value: "\(userLocationExist)")
+                }
+                
+                if let deviceTypeExist = deviceType {
+                    requestBuilder.setParam(key: "device", value: "\(deviceTypeExist)")
+                }
+                
+                requestBuilder.method = .post
+                
+                let encoder = JSONEncoder()
+                encoder.dateEncodingStrategy = .iso8601
+                if let json = try? encoder.encode(AMGAnalyticsRequestWrapper(data: self)), let body = String(data: json, encoding: .utf8){
+                    let swiftyJson = JSON(parseJSON: body)
+                    requestBuilder.jsonBody = swiftyJson
+                    print("Sending: °\(body)")
+                }
+            } else {
+                requestBuilder.method = .get
+            }
             
             return requestBuilder
             
         }
-
-        
     }
-
-    
 }
 
 struct AMGAnalyticsResponseWrapper: Codable {
     let sid: String?
+    let OK: String?
 }
 
 
@@ -427,29 +476,34 @@ struct AMGAnalyticsResponseSerializer: ResponseSerializer {
     
     func serialize(data: Data) throws -> Any {
         
-//        if let response = try? JSONDecoder().decode(AMGAnalyticsResponseWrapper.self, from: data), let sid = response.sid {
-//            return AMGAnalyticsResponse.success(sessionID: sid)
-//        }
-//
-//        return AMGAnalyticsResponse.failure(errorMessage: "Unknown Error")
-        guard let dataAsString = String(data: data, encoding: .utf8) else {
-            throw ResponseError.unableToDecodeData
-        }
-
-        let components = dataAsString.split(separator: ":")
-        guard components.count == 2 else {
-            throw ResponseError.unexpectedFormat
-        }
-
-        let ok = components[0]
-        let payload = String(components[1])
-
-        if ok == "OK" {
-            return AMGAnalyticsResponse.success(sessionID: payload)
-        } else if ok == "KO" {
-            return AMGAnalyticsResponse.failure(errorMessage: payload)
-        } else {
-            throw ResponseError.unexpectedFormat
+        do {
+            let decoded = try JSONDecoder().decode(AMGAnalyticsResponseWrapper.self, from: data)
+            if let sid = decoded.sid {
+                return AMGAnalyticsResponse.success(sessionID: sid)
+            } else {
+                return AMGAnalyticsResponse.failure(errorMessage: "Unknown Error")
+            }
+        } catch {
+            /// AMG Analytics 
+            guard let dataAsString = String(data: data, encoding: .utf8) else {
+                throw ResponseError.unableToDecodeData
+            }
+           
+            let components = dataAsString.split(separator: ":")
+            guard components.count == 2 else {
+                throw ResponseError.unexpectedFormat
+            }
+            
+            let ok = components[0]
+            let payload = String(components[1])
+            
+            if ok == "OK" {
+                return AMGAnalyticsResponse.success(sessionID: payload)
+            } else if ok == "KO" {
+                return AMGAnalyticsResponse.failure(errorMessage: payload)
+            } else {
+                throw ResponseError.unexpectedFormat
+            }
         }
     }
     

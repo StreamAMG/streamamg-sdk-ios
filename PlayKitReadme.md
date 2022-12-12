@@ -460,6 +460,26 @@ To minimise from full screen
 playKit.minimise()
 ```
 
+By default the SDK switches the player to full screen mode in landscape mode. But if your app requires to control this behaviour you can implement the 'AMGPlayKitControlsListener' and override the 'fullscreen' and 'minimise' methods.
+
+``` Swift
+self.playKit?.setControlsListener(controlsListener: self)
+```
+ As the player fullscreen is controlled on client side, you have to notify the SDK when your app displays the player in fullScreen or minimised mode using the interface and update the player frames as given below,
+
+ ``` Swift
+ self.playKit?.updateFullScreen(isFullScreen: Bool)
+ self.playKit?.setPlayerFrame(frame : CGRect)
+ ```
+
+``` Swift
+protocol AMGPlayKitControlsListener: AnyObject {
+     func onFullScreenClicked()
+     func onMinimiseClicked()
+ }
+```
+
+
 ## Sending Media
 
 The main function of PlayKit is to play and interact with media provided by Stream AMG and it's partners.
@@ -664,13 +684,17 @@ PlayKit will atttempt to change bitrate to that value (or the closest one BELOW 
 PlayKit has a listener (`AMGPlayKitListener`) that contains a method (`bitrateChangeOccurred`) that gives you the list of bitrate when available:
 ``` Swift
 func bitrateChangeOccurred(list: [FlavorAsset]?) {
-    
+
 }
 ```
 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.1.6
+- Added option to override Fullscreen and minimise button clicks
+- Moved resize screen method to UI thread
 
 ### 1.1.5
 - Fixed rotation issue on iOS 16
