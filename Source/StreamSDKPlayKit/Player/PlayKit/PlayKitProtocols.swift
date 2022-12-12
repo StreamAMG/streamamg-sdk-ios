@@ -37,3 +37,9 @@ public protocol AMGPictureInPictureDelegate: AnyObject {
     func pictureInPictureWillStart()
     func pictureInPictureDidStop()
 }
+
+public protocol AMGCustomLayoutDelegate: AnyObject {
+    func setControlsListener(controlsListener : AMGPlayKitControlsListener)
+    func updateFullScreen(isFullScreen: Bool)
+    func setPlayerFrame(frame : CGRect)
+}
