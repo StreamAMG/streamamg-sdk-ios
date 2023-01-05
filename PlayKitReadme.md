@@ -16,6 +16,18 @@ Once the library is installed, you can add AMG PlayKit to your project either pr
 
 The class a developer would interact with is simply called 'AMGPlayKit', this single class provides all standard functions of the PlayKit and will be used for the vast majority of interactions with the PlayKit
 
+### iOS Security
+
+The SDK is using HTTP URLs from the HLS manifest, so it is required to add the following settings: 
+
+``` Swift
+<key>NSAppTransportSecurity</key>
+<dict>
+<key>NSAllowsArbitraryLoads</key>
+<true/>
+</dict>
+```
+
 ### Programatic use
 
 To instantiate an instance of AMGPlaykit, the following initialiser should be called:
@@ -622,6 +634,46 @@ You can also implement PiP in app, by accessing the required AVPlayerLayer:
 
 ``` Swift
 playKit.playerLayer()
+```
+
+### AirPlay support
+
+The AMG SDK PlayKit doesn’t integrate directly the AirPlay, so you will need to add it in the app side. However, the PlayKit is pausing the video when the app goes in the background. In order to play again the video while the app is casting please follow the example described here:
+
+Create notification in the `viewDidLoad`:
+``` Swift
+import MediaPlayer
+ 
+/// By default the PlayKit pause the video when goes in backgroud, with this notification we can play again if is casting.
+let notificationCenter = NotificationCenter.default
+notificationCenter.addObserver(self, selector: #selector(enterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+```
+
+Implementation:
+``` Swift
+/// Notification when the app goes in background
+@objc internal func enterBackground(){
+    DispatchQueue.main.async {
+        if self.isAudioSessionUsingAirplayOutputRoute {
+            self.onEnterBackgroundWithAirPlay?()
+        }
+    }
+}
+
+/// Property that return if the app is currently connected with AirPlay
+private var isAudioSessionUsingAirplayOutputRoute: Bool {
+
+    let audioSession = AVAudioSession.sharedInstance()
+    let currentRoute = audioSession.currentRoute
+    
+    for outputPort in currentRoute.outputs {
+        if outputPort.portType == AVAudioSession.Port.airPlay {
+            return true
+        }
+    }
+
+    return false
+}
 ```
 
 ### Casting URL
