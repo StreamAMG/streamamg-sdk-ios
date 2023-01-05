@@ -16,6 +16,7 @@ public protocol PlayableItem {
     var ks: String? { get }
     var mediaType: MediaType { get }
     var mediaTitle: String? { get }
+    var captionAssets: CaptionAssetElement? { get }
     
     var drmLicenseURI: String? { get }
     var drmFPSCertificate: String? { get }
@@ -49,6 +50,10 @@ public extension PlayableItem {
         let mediaEntry = PKMediaEntry(self.entryID, sources: [source])
         mediaEntry.mediaType = mediaType
         mediaEntry.name = self.mediaTitle
+        if let captionAssetsExist = self.captionAssets {
+            mediaEntry.externalSubtitles = externalSubtitlesList(list: captionAssetsExist, duration: mediaEntry.duration)
+        }
+       
         return mediaEntry
     }
     
@@ -70,5 +75,31 @@ public extension PlayableItem {
         } catch {
             return nil
         }
+    }
+    
+    
+    /// Generates URL for the API to serve caption by its id converting it to segmented WebVTT.
+    /// - Parameters:
+    ///   - list: list of CaptionAssetElement
+    ///   - duration: duration of the video
+    /// - Returns: List of PKExternalSubtitle
+    func externalSubtitlesList(list: CaptionAssetElement, duration:TimeInterval) -> [PKExternalSubtitle]?{
+        
+        guard let objectExist = list.objects else {
+            return nil
+        }
+        var externalSubtitles:[PKExternalSubtitle] = []
+        
+        for value in objectExist{
+            guard let serverURL = serverURL, let captionAssetID = value.id, let languageName = value.language, let languageCode = value.languageCode else {
+                break
+            }
+            
+            let url = "\(serverURL)/api_v3/index.php/service/caption_captionasset/action/serveWebVTT/captionAssetId/\(captionAssetID)/segmentIndex/-1/version/2/captions.vtt"
+            externalSubtitles.append(PKExternalSubtitle(id: captionAssetID, name: languageName, language: languageCode, vttURLString: url, duration: 512))
+        }
+        
+        return externalSubtitles
+        
     }
 }

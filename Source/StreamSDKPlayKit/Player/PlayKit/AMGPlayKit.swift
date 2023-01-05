@@ -405,9 +405,9 @@ import AVKit
         if !analyticsConfiguration.youboraParameters.isEmpty {
             var extraParams: [String: Any] = [:]
             analyticsConfiguration.youboraParameters.forEach {param in
-                extraParams["param\(param.id)"] = param.value
+                extraParams["contentCustomDimension\(param.id)"] = param.value
             }
-            youboraOptions["extraParams"] = extraParams
+            youboraOptions["contentCustomDimensions"] = extraParams
         }
         return AnalyticsConfig(params: youboraOptions) //config  //
     }
@@ -518,7 +518,11 @@ import AVKit
         }
         
         if partnerID > 0{
-            loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate), mediaType: mediaType, startPosition: startPosition)
+            
+            fetchTracksData(server: serverUrl, entryID: entryID, partnerID: partnerID, ks: ks) { [self] captionAssetElement in
+                loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate, captionAsset: captionAssetElement), mediaType: mediaType, startPosition: startPosition)
+            }
+            
         } else {
             print("Please provide a PartnerID with the request, add a default with 'addPartnerID(partnerID:Int)' or set a default in the initialiser")
         }
