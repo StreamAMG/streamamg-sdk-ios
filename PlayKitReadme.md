@@ -688,9 +688,23 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 }
 ```
 
+### Subtitle
+
+ To load subtitles or captions for a video invoke this method,
+ ```Swift
+  func fetchTracksData(server: String, entryID: String, partnerID: Int, ks: String?, completion: @escaping ((CaptionAssetElement?) -> Void))
+  ```
+  Available captions will be returned as CaptionAssetElement via the completion handler
+
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.1.7
+- Updated Kaltura and Youbora SDK
+- Moved UI Updation to Main Thread
+- Added support for external subtitles
+
 
 ### 1.1.6
 - Added option to override Fullscreen and minimise button clicks

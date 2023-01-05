@@ -129,18 +129,22 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     }
     
     internal func setLiveColours(){
-        bottomScrubViewTrack.backgroundColor = liveTrackColour
-        scrubBar.minimumTrackTintColor = liveTrackColour
-        spoilerFreeLeftView.backgroundColor = liveTrackColour
-        spoilerFreeRightView.backgroundColor = liveTrackColour
-        liveButton.setTitleColor(liveTrackColour, for: .normal)
+        DispatchQueue.main.async { [self] in
+            bottomScrubViewTrack.backgroundColor = liveTrackColour
+            scrubBar.minimumTrackTintColor = liveTrackColour
+            spoilerFreeLeftView.backgroundColor = liveTrackColour
+            spoilerFreeRightView.backgroundColor = liveTrackColour
+            liveButton.setTitleColor(liveTrackColour, for: .normal)
+        }
     }
     
     internal func setVodColours(){
-        bottomScrubViewTrack.backgroundColor = vodTrackColour
-        scrubBar.minimumTrackTintColor = vodTrackColour
-        spoilerFreeLeftView.backgroundColor = vodTrackColour
-        spoilerFreeRightView.backgroundColor = vodTrackColour
+        DispatchQueue.main.async { [self] in
+            bottomScrubViewTrack.backgroundColor = vodTrackColour
+            scrubBar.minimumTrackTintColor = vodTrackColour
+            spoilerFreeLeftView.backgroundColor = vodTrackColour
+            spoilerFreeRightView.backgroundColor = vodTrackColour
+        }
     }
     
     func setSpoilerFree(_ isSF: Bool){
@@ -161,7 +165,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         hideFullScreenButton = configModel.hideFullscreen
         hideMinimiseButton = configModel.hideMinimise
         
-       // var trackColour = UIColor.init(red: 0.29, green: 0.761, blue: 0.957, alpha: 1.0)
+       
         if let colour = UIColor.init(amghex: configModel.liveTrack){
         liveTrackColour = colour
         }
@@ -228,9 +232,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         } else if let myImage = UIImage(named: "minimiseButton", in: bundle, compatibleWith: .none){
             minimiseImage = myImage
         }
-//        if let customImage = configModel.minimiseImage, let myImage = UIImage(named: customImage) {
-//            minimiseImage = myImage
-//        } else
+
         if let myImage = UIImage(named: "settingsButton", in: bundle, compatibleWith: .none){
             settingsImage = myImage
         }
@@ -276,12 +278,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         let scrubBarBackH = CGFloat(60)
         
         scrubBarBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
-        //scrubBarBackground.layer.cornerRadius = 10
-        //scrubBarBackground.backgroundColor = UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7) //UIColor.clear //
+        
         mainView.addSubview(scrubBarBackground)
         
         spoilerFreeBackground = UIView(frame: CGRect(x: scrubBarBackX, y: scrubBarBackY, width: scrubBarBackW, height: scrubBarBackH))
-        //scrubBarBackground.layer.cornerRadius = 10
+        
         spoilerFreeBackground.backgroundColor = UIColor.clear //UIColor.init(red: 0.043, green: 0.106, blue: 0.118, alpha: 0.7)
         mainView.addSubview(spoilerFreeBackground)
         
@@ -316,14 +317,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         
         if configModel.trackTimeShowing {
             startTime = timeLabel()
-           // endTime = timeLabel()
-//            let endTimeX = scrubBarBackW - endTime.frame.width
-//            endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
-//            endTime.textAlignment = .left
+           
             scrubBarBackground.addSubview(startTime)
-//            scrubBarBackground.addSubview(endTime)
-          //  scrubBarx = startTime.frame.width
-          //  scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width
+
             trackTimeShowing = true
         } else {
             trackTimeShowing = false
@@ -376,44 +372,40 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         updateSpoilerFree()
         showControls(false)
         
-        //createBitrateView()
 
     }
 
     
     func updateIsLive(){
-        var scrubBarx: CGFloat = 10
-        let scrubBarBackW = scrubBarBackground.frame.width
-        var scrubBarw: CGFloat = scrubBarBackW - 20
-        
-        if isLive {
-            liveButton.isHidden = false
-            startTime.isHidden = true
-//            scrubBarx = liveButton.frame.width + 5
-//            scrubBarw = scrubBarBackW - liveButton.frame.width - 10
-        } else {
-            liveButton.isHidden = true
-            if trackTimeShowing {
-                startTime.isHidden = false
-//                let endTimeX = scrubBarBackW - endTime.frame.width
-//                endTime.frame = CGRect(x: endTimeX, y: endTime.frame.origin.y, width: endTime.frame.width, height: endTime.frame.height)
-//                scrubBarx = startTime.frame.width + 5
-//                scrubBarw = scrubBarBackW - startTime.frame.width // - endTime.frame.width - 10
-            } else {
-                
+        DispatchQueue.main.async { [self] in
+            var scrubBarx: CGFloat = 10
+            let scrubBarBackW = scrubBarBackground.frame.width
+            var scrubBarw: CGFloat = scrubBarBackW - 20
+            
+            if isLive {
+                liveButton.isHidden = false
                 startTime.isHidden = true
+            } else {
+                liveButton.isHidden = true
+                if trackTimeShowing {
+                    startTime.isHidden = false
+                } else {
+                    
+                    startTime.isHidden = true
+                }
             }
+            scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
         }
-        scrubBar.frame = CGRect(x: scrubBarx, y: 10, width: scrubBarw, height: 20)
     }
     
     
     func updateSpoilerFree(){
-        //spoilerFreeBackground.frame = scrubBarBackground.frame
-        let halfSize = (spoilerFreeBackground.frame.width - spoilerFreeTextView.frame.width) / 2
-        spoilerFreeLeftView.frame = CGRect(x: 0, y: 18, width: halfSize, height: 4)
-        spoilerFreeTextView.frame = CGRect(x: halfSize, y: 10, width: spoilerFreeTextView.frame.width, height: 20)
-        spoilerFreeRightView.frame = CGRect(x: halfSize + spoilerFreeTextView.frame.width, y: 18, width: halfSize, height: 4)
+        DispatchQueue.main.async { [self] in
+            let halfSize = (spoilerFreeBackground.frame.width - spoilerFreeTextView.frame.width) / 2
+            spoilerFreeLeftView.frame = CGRect(x: 0, y: 18, width: halfSize, height: 4)
+            spoilerFreeTextView.frame = CGRect(x: halfSize, y: 10, width: spoilerFreeTextView.frame.width, height: 20)
+            spoilerFreeRightView.frame = CGRect(x: halfSize + spoilerFreeTextView.frame.width, y: 18, width: halfSize, height: 4)
+        }
     }
 
     func setFullScreen(_ isFS: Bool) {
