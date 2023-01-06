@@ -102,6 +102,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.1.7 - Updated Kaltura SDK, added external subtitles support and improvments. 
+
 ### 1.1.6 - Added option to override full screen and minimise button
 
 ### 1.1.5 - Fixed rotation issue on iOS 16
