@@ -19,7 +19,7 @@ extension AMGPlayKit {
         if let config = config {
             controlConfig = config
         }
-    controlUI = AMGPlayKitStandardControl(hostView: self, delegate: self, config: controlConfig)
+        controlUI = AMGPlayKitStandardControl(hostView: self, delegate: self, config: controlConfig, errorListener: self.errorListener)
         controlVisibleDuration = TimeInterval(controlConfig.fadeOutAfter) / 1000
         //controlUI?.alpha = 0.0
         controlUI?.showControls(false)

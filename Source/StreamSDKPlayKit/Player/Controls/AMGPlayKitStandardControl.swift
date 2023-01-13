@@ -87,12 +87,15 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     private var bitrateColors: [UIColor] = []
     
     var bitrateScroll: UIScrollView = UIScrollView(frame: .zero) // UIView = UIView()
+    
+    private var errorListener : AMGPlayKitErrorListener?
 
-    init (hostView: UIView, delegate: AMGPlayerDelegate, config: AMGPlayKitStandardControlsConfigurationModel? = nil){
+    init (hostView: UIView, delegate: AMGPlayerDelegate, config: AMGPlayKitStandardControlsConfigurationModel? = nil, errorListener : AMGPlayKitErrorListener?){
         super.init(frame: CGRect(x: 0, y: 0, width: hostView.frame.width, height: hostView.frame.height))
         playerView = hostView
         player = delegate
         player?.setControlDelegate(self)
+        self.errorListener = errorListener
         if let model = config {
             configModel = model
         }
@@ -552,6 +555,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         formatter.unitsStyle = .positional  //.full // or .short or .abbreviated
         formatter.allowedUnits = [.second, .minute, .hour]
 
+        if !time.isFinite || time.isNaN {
+            self.errorListener?.onError(error: PlaykitError(entryID: nil, errorParameter: "\(time)", exception: "Failed to convert time to String"))
+        }
         var formattedTimeLeft = formatter.string(from: time)!
         let formattedSplit = formattedTimeLeft.split(separator: ":")
         if formattedSplit.count == 1 {
