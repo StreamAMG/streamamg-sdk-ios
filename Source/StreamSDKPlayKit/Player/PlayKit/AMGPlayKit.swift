@@ -39,6 +39,7 @@ import AVKit
     internal var castingCompletion: ((URL?) -> Void)? = nil
     internal var castingURL: URL? = nil
     internal var initialCastingURL: String? = nil
+    internal var errorListener : AMGPlayKitErrorListener?
     
     var orientationTime: TimeInterval = 0
     
@@ -187,6 +188,10 @@ import AVKit
             print("StreamAMGSDK: Value for setAnalyticsRequestMethod not accepted.")
             break
         }
+    }
+    
+    public func setPlayKitErrorListener(listener: AMGPlayKitErrorListener) {
+        self.errorListener = listener
     }
     
     /**
@@ -520,7 +525,9 @@ import AVKit
         if partnerID > 0{
             
             fetchTracksData(server: serverUrl, entryID: entryID, partnerID: partnerID, ks: ks) { [self] captionAssetElement in
-                loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate, captionAsset: captionAssetElement), mediaType: mediaType, startPosition: startPosition)
+                DispatchQueue.main.async {
+                    self.loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: self.partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate, captionAsset: captionAssetElement), mediaType: mediaType, startPosition: startPosition)
+                }
             }
             
         } else {

@@ -752,6 +752,10 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 
 All notable changes to this project will be documented in this section.
 
+### 1.1.8
+- Added error listeners
+- Moved load media method to main thread
+
 ### 1.1.7
 - Updated Kaltura and Youbora SDK
 - Moved UI Updation to Main Thread

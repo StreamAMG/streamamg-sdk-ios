@@ -101,8 +101,9 @@ Change Log:
 ---------------
 
 All notable changes to this project will be documented in this section.
+### 1.1.8 - Added fix for multi threading issue.
 
-### 1.1.7 - Updated Kaltura SDK, added external subtitles support and improvments. 
+### 1.1.7 - Updated Kaltura SDK, added external subtitles support and improvements.
 
 ### 1.1.6 - Added option to override full screen and minimise button
 
