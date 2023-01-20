@@ -18,7 +18,7 @@ The class a developer would interact with is simply called 'AMGPlayKit', this si
 
 ### iOS Security
 
-The SDK is using HTTP URLs from the HLS manifest, so it is required to add the following settings: 
+The SDK is using HTTP URLs from the HLS manifest, so it is required to add the following settings:
 
 ``` Swift
 <key>NSAppTransportSecurity</key>
@@ -643,7 +643,7 @@ The AMG SDK PlayKit doesn’t integrate directly the AirPlay, so you will need t
 Create notification in the `viewDidLoad`:
 ``` Swift
 import MediaPlayer
- 
+
 /// By default the PlayKit pause the video when goes in backgroud, with this notification we can play again if is casting.
 let notificationCenter = NotificationCenter.default
 notificationCenter.addObserver(self, selector: #selector(enterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -665,7 +665,7 @@ private var isAudioSessionUsingAirplayOutputRoute: Bool {
 
     let audioSession = AVAudioSession.sharedInstance()
     let currentRoute = audioSession.currentRoute
-    
+
     for outputPort in currentRoute.outputs {
         if outputPort.portType == AVAudioSession.Port.airPlay {
             return true
@@ -742,15 +742,22 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 
 ### Subtitle
 
- To load subtitles or captions for a video invoke this method,
+ To display subtitles or captions for a video subscribe to the player events as below,
  ```Swift
-  func fetchTracksData(server: String, entryID: String, partnerID: Int, ks: String?, completion: @escaping ((CaptionAssetElement?) -> Void))
+ self.playKit.player?.addObserver(self, events: [PlayerEvent.tracksAvailable, PlayerEvent.textTrackChanged, PlayerEvent.audioTrackChanged])
+      { [weak self] event in
+           if let tracksExist = event.tracks?.textTracks {
+               self?.playKit.player?.selectTrack(trackId: tracksExist.last?.id ?? "")
+           }
+       }
   ```
-  Available captions will be returned as CaptionAssetElement via the completion handler
 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.1.9
+- Updated Content for subtitles section
 
 ### 1.1.8
 - Added error listeners
