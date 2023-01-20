@@ -101,6 +101,8 @@ Change Log:
 ---------------
 
 All notable changes to this project will be documented in this section.
+### 1.1.9 - Updated PlayKit readme for subtitles section.
+
 ### 1.1.8 - Added fix for multi threading issue.
 
 ### 1.1.7 - Updated Kaltura SDK, added external subtitles support and improvements.
