@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import PlayKit
 
 /**
  This protocol handles call backs to the controls themselves, including play state and playhead position
@@ -23,12 +24,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     let fullscreenButton = UIButton(type: UIButton.ButtonType.custom)
     let minimiseButton = UIButton(type: UIButton.ButtonType.custom)
     let settingsButton = UIButton(type: UIButton.ButtonType.custom)
+    let subtitlesButton = UIButton(type: UIButton.ButtonType.custom)
     var playImage: UIImage = UIImage()
     var skipForawrdImage: UIImage = UIImage()
     var skipBackwardImage: UIImage = UIImage()
     var pauseImage: UIImage = UIImage()
     var fullScreenImage: UIImage = UIImage()
     var settingsImage: UIImage = UIImage()
+    var subtitlesImage: UIImage = UIImage()
     var minimiseImage: UIImage = UIImage()
     var thumb: UIImage = UIImage()
     var checkmark: UIImage = UIImage()
@@ -42,6 +45,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     
     
     var bitrateView: UIView? = nil
+    var subTitlesView: UIView? = nil
     
     
     var liveButton = UIButton()
@@ -83,10 +87,13 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     private var bottomTrackEnabled = false
     
     private var bitrates: [FlavorAsset] = []
+    private var tracks: [Track] = []
     private var selectedBitrate = 0
-    private var bitrateColors: [UIColor] = []
+    private var selectedCaption = 0
+    private var selectorColors: [UIColor] = []
     
     var bitrateScroll: UIScrollView = UIScrollView(frame: .zero) // UIView = UIView()
+    var subtitlesScroll: UIScrollView = UIScrollView(frame: .zero)
     
     private var errorListener : AMGPlayKitErrorListener?
 
@@ -247,10 +254,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         
         if let color = UIColor(named: "bitrate_dark_gray", in: bundle, compatibleWith: .none) {
-            bitrateColors.append(color)
+            selectorColors.append(color)
         }
         if let color = UIColor(named: "bitrate_medium_gray", in: bundle, compatibleWith: .none) {
-            bitrateColors.append(color)
+            selectorColors.append(color)
+        }
+        
+        if let myImage = UIImage(named: "subtitles_button", in: bundle, compatibleWith: .none){
+            subtitlesImage = myImage
         }
         
         playPause.frame = CGRect(x: x, y: y, width: playPauseSize, height: playPauseSize)
@@ -369,6 +380,20 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             settingsButton.addTarget(self, action: #selector(openBitrateView), for: .touchUpInside)
             settingsButton.layer.cornerRadius = 8
             mainView.addSubview(settingsButton)
+        }
+        
+        if configModel.subTitlesSelector {
+            var x = w - skipSize - 20
+            if configModel.bitrateSelector {
+                x = settingsButton.frame.origin.x - subtitlesButton.frame.width
+            }
+            subtitlesButton.frame = CGRect(x: x, y: h - skipSize - 5, width: skipSize, height: skipSize)
+            subtitlesButton.tintColor = UIColor.white
+            subtitlesButton.contentMode = .scaleToFill
+            subtitlesButton.setImage(subtitlesImage, for: .normal)
+            subtitlesButton.addTarget(self, action: #selector(openSubtitlesView), for: .touchUpInside)
+            subtitlesButton.layer.cornerRadius = 8
+            mainView.addSubview(subtitlesButton)
         }
         
         updateIsLive()
@@ -498,7 +523,25 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         createBitrateSelector(withBitrateList: bitrates)
         addSubview(bitrateView!)
         player?.cancelTimer()
-        settingsButton.backgroundColor = bitrateColors.count > 0 ? bitrateColors.first : UIColor.black
+        settingsButton.backgroundColor = selectorColors.count > 0 ? selectorColors.first : UIColor.black
+    }
+    
+    @objc func closeSubtitlesView() {
+        subTitlesView?.removeFromSuperview()
+        player?.startControlVisibilityTimer()
+        subtitlesButton.backgroundColor = .clear
+    }
+    
+    
+    @objc func openSubtitlesView() {
+        subTitlesView = UIView.init(frame: self.bounds)
+        subTitlesView?.backgroundColor = .clear
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(closeSubtitlesView))
+        subTitlesView?.addGestureRecognizer(gesture)
+        createSubtitlesSelector(withTracks: tracks)
+        addSubview(subTitlesView!)
+        player?.cancelTimer()
+        subtitlesButton.backgroundColor = selectorColors.count > 0 ? selectorColors.first : UIColor.black
     }
 
     func play() {
@@ -616,6 +659,14 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         
         settingsButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 5, width: skipSize, height: skipSize)
         
+        //  If bitrate selector is visible , then display subtitles button next to bitrate selector ,
+        //  else move subtitles button to end of frame
+        if configModel.bitrateSelector {
+            subtitlesButton.frame = CGRect(x: settingsButton.frame.origin.x - subtitlesButton.frame.width, y: h - skipSize - 5, width: skipSize, height: skipSize)
+        } else {
+            subtitlesButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 5, width: skipSize, height: skipSize)
+        }
+        
         if (isFullScreen) {
             fullscreenButton.setImage(minimiseImage, for: .normal)
         } else {
@@ -627,6 +678,11 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             self.bitrateScroll.heightAnchor.constraint(equalToConstant: min(bView.frame.height - 10, self.bitrateScroll.contentSize.height)).isActive = true
         }
         
+        if let bView = subTitlesView {
+            bView.frame = self.bounds
+            self.subtitlesScroll.heightAnchor.constraint(equalToConstant: min(bView.frame.height - 10, self.subtitlesScroll.contentSize.height)).isActive = true
+        }
+        
         updateIsLive()
         updateSpoilerFree()
     }
@@ -635,27 +691,55 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         mainView.isHidden = !shouldShow
         bottomScrubView.isHidden = shouldShow
         closeBitrateView()
+        closeSubtitlesView()
     }
     
-    
+    func createSubtitlesSelector(withTracks: [Track]){
+        self.tracks = withTracks
+        let maxWidth: CGFloat = 165
+        var count = 0
+        DispatchQueue.main.async { [self] in
+            self.subtitlesScroll.removeFromSuperview()
+            self.subtitlesScroll = self.createContentScroll(scrollViewWidth: maxWidth, itemCount: self.tracks.count)
+            
+            self.tracks.forEach { track in
+                let button = self.createButtonLabel(text: "\(track.title)", width: maxWidth, index: count, selectedIndex: selectedCaption, colors: selectorColors)
+                button.addTarget(self, action: #selector(swapSubTitle(button:)), for: .touchUpInside)
+                self.subtitlesScroll.addSubview(button)
+                count += 1
+            }
+            self.subTitlesView?.addSubview(self.subtitlesScroll)
+            
+            if let bView = self.subTitlesView {
+                let traillingMargin = bView.frame.width - self.subtitlesButton.frame.origin.x
+                self.subtitlesScroll.trailingAnchor.constraint(equalTo: bView.trailingAnchor, constant: -(traillingMargin + 5)).isActive = true
+                self.subtitlesScroll.heightAnchor.constraint(equalToConstant: min(bView.frame.height - 10, self.subtitlesScroll.contentSize.height)).isActive = true
+                self.subtitlesScroll.bottomAnchor.constraint(equalTo: bView.bottomAnchor, constant: -5).isActive = true
+                self.subtitlesScroll.widthAnchor.constraint(equalToConstant: maxWidth).isActive = true
+            }
+            if self.tracks.count > self.selectedCaption {
+                let selectedItem = self.subtitlesScroll.subviews[self.selectedCaption]
+                self.subtitlesScroll.setContentOffset(selectedItem.frame.origin, animated: false)
+            }
+        }
+    }
     
     func createBitrateSelector(withBitrateList: [FlavorAsset]){
         bitrates = withBitrateList
         let maxWidth: CGFloat = 165
         var count = 1
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [self] in
             self.bitrateScroll.removeFromSuperview()
-            self.bitrateScroll = UIScrollView(frame: .zero)
-            self.bitrateScroll.alwaysBounceVertical = false;
-            self.bitrateScroll.translatesAutoresizingMaskIntoConstraints = false
-            self.bitrateScroll.contentInsetAdjustmentBehavior = .never
-            self.bitrateScroll.contentSize = CGSize(width: maxWidth, height: CGFloat(self.bitrates.count + 1) * 48)
-            self.bitrateScroll.backgroundColor = .clear
-            self.bitrateScroll.layer.cornerRadius = 8
+            self.bitrateScroll = createContentScroll(scrollViewWidth: maxWidth, itemCount: self.bitrates.count + 1)
             
-            self.createBitrateLabel(text: "Auto", width: maxWidth, index: 0)
+            
+            let button = createButtonLabel(text: "Auto", width: maxWidth, index: 0, selectedIndex: self.selectedBitrate, colors: selectorColors)
+            button.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
+            self.bitrateScroll.addSubview(button)
             withBitrateList.forEach { bitrate in
-                self.createBitrateLabel(text: "\(bitrate.bitrate ?? 0)", width: maxWidth, index: count)
+                let button = createButtonLabel(text: "\(bitrate.bitrate ?? 0)", width: maxWidth, index: count, selectedIndex: self.selectedBitrate, colors: selectorColors)
+                button.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
+                self.bitrateScroll.addSubview(button)
                 count += 1
             }
             self.bitrateView?.addSubview(self.bitrateScroll)
@@ -669,7 +753,18 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
     }
     
-    func createBitrateLabel(text: String, width: CGFloat, index: Int) {
+    private func createContentScroll(scrollViewWidth: CGFloat, itemCount: Int) -> UIScrollView {
+        let scrollView = UIScrollView(frame: .zero)
+        scrollView.alwaysBounceVertical = false;
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.contentSize = CGSize(width: scrollViewWidth, height: CGFloat(itemCount) * 48)
+        scrollView.backgroundColor = .clear
+        scrollView.layer.cornerRadius = 8
+        return scrollView
+    }
+    
+    private func createButtonLabel(text: String, width: CGFloat, index: Int, selectedIndex: Int, colors : [UIColor]) -> UIButton {
         let tText = UIButton(frame: CGRect(x: 0, y: CGFloat(48 * index), width: width, height: 48))
         tText.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         tText.setTitle(text, for: .normal)
@@ -677,22 +772,22 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         tText.contentHorizontalAlignment = .left
         tText.titleEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
         
-        if index == selectedBitrate {
-            tText.backgroundColor = bitrateColors.count > 0 ? bitrateColors.first : UIColor.black
+        if index == selectedIndex {
+            tText.backgroundColor = colors.count > 0 ? colors.first : UIColor.black
             tText.setImage(checkmark.withRenderingMode(.alwaysOriginal), for: .normal)
             tText.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
             tText.imageEdgeInsets = UIEdgeInsets(top: 0, left: width - 30, bottom: 0, right: 0)
         } else {
-            tText.backgroundColor = bitrateColors.count > 1 ? bitrateColors[1] : UIColor.darkGray
+            tText.backgroundColor = colors.count > 1 ? colors[1] : UIColor.darkGray
         }
         
         tText.tag = index
-        tText.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
+        tText.addTarget(self, action: #selector(swapSubTitle(button:)), for: .touchUpInside)
         
         let divider = UIView(frame: CGRect(x: 0, y: 0, width: width, height: 0.5))
-        divider.backgroundColor = bitrateColors.count > 0 ? bitrateColors.first : UIColor.black
+        divider.backgroundColor = colors.count > 0 ? colors.first : UIColor.black
         tText.addSubview(divider)
-        self.bitrateScroll.addSubview(tText)
+        return tText
     }
     
     func removeStandardView(){
@@ -718,5 +813,23 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         player?.setMaximumBitrate(bitrate: bitrates[myTag - 1])
         closeBitrateView()
         return
+    }
+    
+    @objc func swapSubTitle(button: UIButton) {
+        let myTag = button.tag
+        if myTag == selectedCaption || self.tracks.count == 0 || tag > self.tracks.count {
+            closeSubtitlesView()
+            return
+        }
+        
+        selectedCaption = myTag
+        player?.selectSubtitlesTrack(trackId: self.tracks[myTag].id )
+        closeSubtitlesView()
+        return
+    }
+    
+    func clearTracks() {
+        self.selectedCaption = 0
+        self.tracks.removeAll()
     }
 }

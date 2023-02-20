@@ -526,6 +526,8 @@ import AVKit
             
             fetchTracksData(server: serverUrl, entryID: entryID, partnerID: partnerID, ks: ks) { [self] captionAssetElement in
                 DispatchQueue.main.async {
+                    //Start listenting to changes in subtitle tracks
+                    self.observeTrackChanges()
                     self.loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: self.partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate, captionAsset: captionAssetElement), mediaType: mediaType, startPosition: startPosition)
                 }
             }
@@ -714,5 +716,9 @@ import AVKit
     
     public func updateYouboraParameter(id: Int, value: String) {
         analyticsConfiguration.updateYouboraParameter(id: id, value: value)
+    }
+    
+    public func selectSubtitlesTrack(trackId: String) {
+        self.player?.selectTrack(trackId: trackId)
     }
 }

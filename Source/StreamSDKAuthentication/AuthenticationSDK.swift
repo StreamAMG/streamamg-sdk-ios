@@ -13,16 +13,21 @@ import Foundation
 
 public class AuthenticationSDK {
     
-    /**
-     * Singleton instance for auth kit
-     */
+    // MARK: Public Property
+    
+    
+    /// Singleton instance for auth kit
     public static let instance = AuthenticationSDK()
+    
+    public var lastLoginResponse: LoginResponse? = nil
+    
+    // MARK: Private Property
     
     var url: String? = nil
     
     var parameters: Dictionary<String, String> = [:]
     
-    public var lastLoginResponse: LoginResponse? = nil
+    // MARK: Public methods
     
     /**
      * Initialisation of the authentication SDK - URL is mandatory
@@ -38,27 +43,6 @@ public class AuthenticationSDK {
         addLanguage()
     }
     
-    func separateParameters(params: String){
-        var passedParams = params
-        if passedParams.starts(with: "?"){
-            passedParams.remove(at: passedParams.startIndex)
-        }
-        let allParams = passedParams.split(separator: "&")
-        allParams.forEach{param in
-            let thisParam = param.split(separator: "=")
-            if thisParam.count == 2 {
-                parameters[String(thisParam[0])] = String(thisParam[1])
-            }
-        }
-    }
-    
-    func addLanguage(){
-        if let _ = parameters["lang"] {
-            return
-        }
-        parameters["lang"] = NSLocale.preferredLanguages.first
-    }
-
     /**
      * Returns a Boolean value indicating the user's logged in status
      */
@@ -101,14 +85,14 @@ public class AuthenticationSDK {
         }
         let request = LoginRequest.init(emailAddress: email, password: password)
         do {
-        let body = try JSONEncoder().encode(request)
+            let body = try JSONEncoder().encode(request)
             StreamAMGSDK.sendPostRequest(loginURL(url: apiURL), body: body){ (result: Result<LoginResponse, StreamAMGError>) in
                 switch result {
                 case .success(let data):
                     if let userModel = data.currentCustomerSession {
-                    self.lastLoginResponse = data
-                    self.securelyStoreEmailAndPass(email: email, password: password)
-                    completion?(.success(userModel))
+                        self.lastLoginResponse = data
+                        self.securelyStoreEmailAndPass(email: email, password: password)
+                        completion?(.success(userModel))
                     } else {
                         let error = StreamAMGError(message: "No user session returned")
                         completion?(.failure(error))
@@ -151,6 +135,110 @@ public class AuthenticationSDK {
         }
     }
     
+    
+    /// In order to perform queries against the CloudPay API a user must first initialise a session. This can be done for SSO users by generating a SSO Session.
+    /// - Parameters:
+    ///   - token: The Third-Party SSO token
+    ///   - completion: Return the respone.
+    public func startSession(token:String, completion: ((StreamAMGError?) -> Void)?){
+        guard let apiURL = url else {
+            let error = StreamAMGError(message: "Authentication API URL not set")
+            completion?(error)
+            return
+        }
+        
+        StreamAMGSDK.sendRequest(ssoStartSessionURL(url: apiURL, token: token)){ (result: Result<LoginResponse, StreamAMGError>) in
+            switch result {
+            case .success(_):
+                completion?(nil)
+                break
+            case .failure(let error):
+                self.lastLoginResponse = nil
+                completion?(error)
+            }
+        }
+    }
+    
+    /**
+     * Update user details. There is no need for the JWT token if previously logged in with the StreamAMG SDK.
+     * @param email User's  first name
+     * @param lastName User's  last name
+     * @param completion Completion block capturing UserSummaryResponse or StreamAMGError
+     */
+    public func updateUserSummaryWithUserToken(firstName: String, lastName: String, completion: ((Result<UserSummaryResponse, StreamAMGError>) -> Void)?){
+        
+        guard let token = lastLoginResponse?.authenticationToken else {
+            let error = StreamAMGError(message: "User is not logged in")
+            completion?(.failure(error))
+            return
+        }
+        
+        updateUserSummaryWithUserToken(token: token, firstName: firstName, lastName: lastName, completion: completion)
+    }
+    
+    /// Update user details. JWT token is needed if previously logged in with custom SSO.
+    /// - Parameters:
+    ///   - token: User's JWT token
+    ///   - firstName: User's  first name
+    ///   - lastName: User's  last name
+    ///   - completion: JWT token is needed if previously logged in with custom SSO.
+    public func updateUserSummaryWithUserToken(token: String, firstName: String, lastName: String, completion: ((Result<UserSummaryResponse, StreamAMGError>) -> Void)?){
+        guard let apiURL = url else {
+            let error = StreamAMGError(message: "Authentication API URL not set")
+            completion?(.failure(error))
+            return
+        }
+        if (firstName.isEmpty){
+            let error = StreamAMGError(message: "First name not valid")
+            completion?(.failure(error))
+            return
+        }
+        if (lastName.isEmpty){
+            let error = StreamAMGError(message: "Last name not valid")
+            completion?(.failure(error))
+            return
+        }
+        
+        
+        let request = UserSummaryRequest.init(FirstName: firstName, LastName: lastName)
+        do {
+            let body = try JSONEncoder().encode(request)
+            StreamAMGSDK.sendPatchRequest(updateUserSummary(url: apiURL, token: token), body: body){ (result: Result<UserSummaryResponse, StreamAMGError>) in
+                switch result {
+                case .success(let data):
+                    completion?(.success(data))
+                case .failure(let error):
+                    self.lastLoginResponse = nil
+                    completion?(.failure(error))
+                }
+            }
+        } catch {
+            print("Error creating data - \(error.localizedDescription)")
+        }
+    }
+    
+    
+    /// Returns an account summary of the Authenticated User.
+    /// - Parameters:
+    ///   - token: The JWT Token used for Authorisation
+    ///   - completion: Completion block capturing UserSummaryResponse or StreamAMGError
+    public func getUserSummary(token: String, completion: ((Result<UserSummaryResponse, StreamAMGError>) -> Void)?){
+        guard let apiURL = url else {
+            let error = StreamAMGError(message: "Authentication API URL not set")
+            completion?(.failure(error))
+            return
+        }
+       
+        StreamAMGSDK.sendRequest(getUserSummaryURL(url: apiURL, token: token)){ (result: Result<UserSummaryResponse, StreamAMGError>) in
+            switch result {
+            case .success(let data):
+                completion?(.success(data))
+            case .failure(let error):
+                completion?(.failure(error))
+            }
+        }
+    }
+    
     /**
      * Request Key Session token for a particular Entry ID
      * @param entryID Valid entry ID for an item of StreamAMG media
@@ -171,21 +259,21 @@ public class AuthenticationSDK {
             switch result {
             case .success(let data):
                 if let status = SAKSResult(rawValue: data.status ?? -2){
-                switch status{
-                case .Granted:
-                if let session = data.kSession {
-                    completion?(.success((.Granted, session)))
-                } else {
-                    let error = StreamAMGError(message: "Unknown error occurred - \(data.status ?? -4)")
-                    completion?(.failure(error))
-                }
-                default:
-                    let error = StreamAMGError(message: status.meaning())
-                    if let furtherError = data.errorMessage {
-                        error.addMessage(message: furtherError)
+                    switch status{
+                    case .Granted:
+                        if let session = data.kSession {
+                            completion?(.success((.Granted, session)))
+                        } else {
+                            let error = StreamAMGError(message: "Unknown error occurred - \(data.status ?? -4)")
+                            completion?(.failure(error))
+                        }
+                    default:
+                        let error = StreamAMGError(message: status.meaning())
+                        if let furtherError = data.errorMessage {
+                            error.addMessage(message: furtherError)
+                        }
+                        completion?(.failure(error))
                     }
-                    completion?(.failure(error))
-                }
                 } else {
                     let error = StreamAMGError(message: "Unknown error occurred - \(data.status ?? -3)")
                     if let furtherError = data.errorMessage {
@@ -215,6 +303,29 @@ public class AuthenticationSDK {
         return nil
     }
     
+    // MARK: Private methods
+    
+    func separateParameters(params: String){
+        var passedParams = params
+        if passedParams.starts(with: "?"){
+            passedParams.remove(at: passedParams.startIndex)
+        }
+        let allParams = passedParams.split(separator: "&")
+        allParams.forEach{param in
+            let thisParam = param.split(separator: "=")
+            if thisParam.count == 2 {
+                parameters[String(thisParam[0])] = String(thisParam[1])
+            }
+        }
+    }
+    
+    func addLanguage(){
+        if let _ = parameters["lang"] {
+            return
+        }
+        parameters["lang"] = NSLocale.preferredLanguages.first
+    }
+    
     func removeStoredData(){
         let emailSuccess = KeyChain.remove(key: "authEmail")
         let passwordSuccess = KeyChain.remove(key: "authPassword")
@@ -225,7 +336,7 @@ public class AuthenticationSDK {
         var parameterString = ""
         if !parameters.isEmpty {
             if  includeQuerySign {
-            parameterString = "?"
+                parameterString = "?"
             } else {
                 parameterString = "&"
             }
@@ -240,15 +351,30 @@ public class AuthenticationSDK {
     }
     
     func loginURL(url: String) -> String{
-        return "\(url)api/v1/session/start/\(addParameters())"
+        return "\(url)/api/v1/session/start/\(addParameters())"
     }
     
     func logoutURL(url: String, token: String) -> String{
-        return "\(url)api/v1/session/terminate/?apisessionid=\(token)\(addParameters(includeQuerySign: false))"
+        return "\(url)/api/v1/session/terminate/?apisessionid=\(token)\(addParameters(includeQuerySign: false))"
     }
     
     func ksURL(url: String, entryID: String, token: String) -> String{
-        return "\(url)api/v1/session/ksession/?apisessionid=\(token)&entryId=\(entryID)\(addParameters(includeQuerySign: false))"
+        return "\(url)/api/v1/session/ksession/?apisessionid=\(token)&entryId=\(entryID)\(addParameters(includeQuerySign: false))"
     }
+    
+    func updateUserSummary(url: String, token: String) -> String{
+        return "\(url)/api/v1/account?apijwttoken=\(token)\(addParameters(includeQuerySign: false))"
+    }
+    
+    func getUserSummaryURL(url: String, token: String) -> String{
+        return "\(url)/api/v1/account?apijwttoken=\(token)\(addParameters(includeQuerySign: false))"
+    }
+    
+    func ssoStartSessionURL(url: String, token: String) -> String{
+        return "\(url)/sso/start?token=\(token)\(addParameters(includeQuerySign: false))"
+    }
+    
+
+    
     
 }

@@ -77,7 +77,7 @@ It doesn't fully matter when these methods are called, but it is suggested that 
     func applicationDidBecomeActive(_ application: UIApplication) {
         AMGPurchases.instance.startObserving()    
     }
-    
+
     func applicationWillResignActive(_ application: UIApplication) {
         AMGPurchases.instance.stopObserving()
     }    
@@ -204,14 +204,25 @@ A failed purchase or receipt validation issue will result in the following metho
 ``` Swift
     func purchaseFailed(purchase: AMGInAppPurchase, error: StreamAMGError)
 ```
-   
+
 Where 'error' is a standard StreamAMGError (see 'Core' module)
 
+Validate a purchase
+=======================
+
+``` Swift
+     validatePurchase(payment: ReceiptPaymentModel?)
+     validatePurchase(payment: ReceiptPaymentModel?, withJWTToken: String?)
+```
+This method validates the purchase you just completed. This method also supports sending an optional custom JWT Token. You can make use of the custom JWT Token if you are not using the login functionality provided by the StreamAMG Authentication API.
+
+If you are using custom token to validate the purchase, we recommend using the startSession() API provided by the StreamAMG Authentication API to log the user sessions and to get CloudPay, check the concurrency.
 
 Change Log:
 ===========
 
 All notable changes to this project will be documented in this section.
+### 1.1.10 - Updated valdiatePurchase API to accept custom JWT Token
 
 ### 1.0 - Release
 
