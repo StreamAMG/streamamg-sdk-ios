@@ -18,7 +18,8 @@ extension AMGPlayKit {
     ///   - ks: Key Session protection
     ///   - completion: returns the list of availabe subtitles {CaptionAssetElement}
     func fetchTracksData(server: String, entryID: String, partnerID: Int, ks: String?, completion: @escaping ((CaptionAssetElement?) -> Void)) {
-     
+        //Remove all subtitles list loaded for last media
+        self.removeAllTracks()
             guard let validURL = URL(string: "\(server)/api_v3/?service=multirequest&format=1&1:service=session&1:action=startWidgetSession&1:widgetId=\(partnerID)&2:ks=\(ks ?? "")&2:service=caption_captionasset&2:action=list&2:filter:entryIdEqual=\(entryID)")
             else {
                 completion(nil)
@@ -43,8 +44,19 @@ extension AMGPlayKit {
         request.resume()
         
     }
-    
 
+    func observeTrackChanges() {
+        self.player?.addObserver(self, events: [PlayerEvent.tracksAvailable, PlayerEvent.textTrackChanged, PlayerEvent.audioTrackChanged]) { [weak self] event in
+            if let tracksExist = event.tracks?.textTracks {
+                self?.controlUI?.createSubtitlesSelector(withTracks: tracksExist)
+            }
+        }
+    }
+    
+    func removeAllTracks() {
+        self.controlUI?.closeSubtitlesView()
+        self.controlUI?.clearTracks()
+    }
     
 }
 

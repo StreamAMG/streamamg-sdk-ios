@@ -266,6 +266,11 @@ Toggle the visibility of the bitrate selector
 .setBitrateSelector(_ isOn: Bool)
 ```
 
+Toggle the visibility of the subtitles selector
+``` Swift
+.setSubtitlesSelector(_ isOn: Bool)
+```
+
 ## Media overlays
 
 AMG Play Kit supports the overlaying of an 'is live' badge and a logo as overlays to any media playing.
@@ -755,6 +760,9 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.1.10
+- Integrated Subtitles UI
 
 ### 1.1.9
 - Updated Content for subtitles section

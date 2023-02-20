@@ -111,7 +111,7 @@ public class IAPService: NSObject, SKPaymentTransactionObserver {
     
     func buy(product: AMGInAppPurchase, withHandler handler: @escaping ((_ result: Result<Bool, StreamAMGError>) -> Void)) {
         guard let iap = skuList.first(where: {$0.productIdentifier == product.purchaseID}) else {
-            handler(.success(false))
+            handler(.failure(StreamAMGError(message: "Product Identifier not found.")))
             return
         }
         let payment = SKPayment(product: iap)

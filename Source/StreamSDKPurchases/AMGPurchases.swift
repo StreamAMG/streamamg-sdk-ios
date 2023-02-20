@@ -35,67 +35,66 @@ public class AMGPurchases: IAPDelegate {
     
     public func startObserving() {
         iapService.startObserving()
-      }
-       
-       
+    }
+    
+    
     public func stopObserving() {
         iapService.stopObserving()
-      }
+    }
     
     public func validatePurchase(payment: ReceiptPaymentModel?) {
-           guard
-             let receiptUrl = Bundle.main.appStoreReceiptURL,
-             let receiptData = try? Data(contentsOf: receiptUrl),
-             let apiKey = auth.lastLoginResponse?.authenticationToken, apiKey.count > 0
-             else {
-               return
-           }
-           
-           let receiptBase64 = receiptData.base64EncodedString(options: [])
-       
-        let request = ReceiptModel(base64EncodedReceipt: receiptBase64, payment: payment)
-        do {
-        let body = try JSONEncoder().encode(request)
-
-            StreamAMGSDK.sendPostRequest("\(apiURL)iap/verify?apisessionid=\(apiKey)", body: body){ (result: Result<ReceiptVerificationModel, StreamAMGError>) in
-            switch result {
-            case .success(let data):
-                if data.isVerified {
-                    
-                    if let currentPurchase = self.currentPurchase {
-                        
-                            DispatchQueue.main.async {
-                        self.delegate?.purchaseSuccessful(purchase: currentPurchase)
-                            }
-                    }
-                } else {
-                    if let myPurchase = self.currentPurchase {
-                        
-                            DispatchQueue.main.async {
-                       self.delegate?.purchaseFailed(purchase: myPurchase, error: StreamAMGError(message: "Receipt verification failed"))
-                            }
-                    }
-                }
-                
-            case .failure(let error):
-                if let currentPurchase = self.currentPurchase {
-                    
-                        DispatchQueue.main.async {
-                self.delegate?.purchaseFailed(purchase: currentPurchase, error: error)
-                        }
-                }
-                }
-        }
-        } catch {
-            if let currentPurchase = self.currentPurchase {
-                
-                    DispatchQueue.main.async {
-            self.delegate?.purchaseFailed(purchase: currentPurchase, error: StreamAMGError(message: "Receipt Invalid"))
-                    }
-            }
-        }
+        self.validatePurchase(payment: payment, withJWTToken: auth.lastLoginResponse?.authenticationToken)
+    }
+    
+    public func validatePurchase(payment: ReceiptPaymentModel?, withJWTToken: String?) {
+        guard
+            let receiptUrl = Bundle.main.appStoreReceiptURL,
+            let receiptData = try? Data(contentsOf: receiptUrl),
+            let apiKey = withJWTToken, apiKey.count > 0
+        else {
+            return
         }
         
+        let receiptBase64 = receiptData.base64EncodedString(options: [])
+        
+        let request = ReceiptModel(base64EncodedReceipt: receiptBase64, payment: payment)
+        do {
+            let body = try JSONEncoder().encode(request)
+            
+            StreamAMGSDK.sendPostRequest("\(apiURL)iap/verify?apisessionid=\(apiKey)", body: body){ (result: Result<ReceiptVerificationModel, StreamAMGError>) in
+                switch result {
+                case .success(let data):
+                    if data.isVerified {
+                        if let currentPurchase = self.currentPurchase {
+                            DispatchQueue.main.async {
+                                self.delegate?.purchaseSuccessful(purchase: currentPurchase)
+                            }
+                        }
+                    } else {
+                        if let myPurchase = self.currentPurchase {
+                            DispatchQueue.main.async {
+                                self.delegate?.purchaseFailed(purchase: myPurchase, error: StreamAMGError(message: "Receipt verification failed"))
+                            }
+                        }
+                    }
+                    
+                case .failure(let error):
+                    if let currentPurchase = self.currentPurchase {
+                        DispatchQueue.main.async {
+                            self.delegate?.purchaseFailed(purchase: currentPurchase, error: error)
+                        }
+                    }
+                }
+            }
+        } catch {
+            if let currentPurchase = self.currentPurchase {
+                DispatchQueue.main.async {
+                    self.delegate?.purchaseFailed(purchase: currentPurchase, error: StreamAMGError(message: "Receipt Invalid"))
+                }
+            }
+        }
+    }
+    
     public func canMakePayments() -> Bool {
         return iapService.canMakePayments()
     }
@@ -107,21 +106,21 @@ public class AMGPurchases: IAPDelegate {
     
     public func purchase(product: AMGInAppPurchase) {
         currentPurchase = product
-    iapService.buy(product: product) { (result) in
-        DispatchQueue.main.async {
-            switch result {
-            case .success(_):
-                print("Product purchased! - \(product.purchaseName)")
-               // self.validatePurchase()
-                //self.delegate?.purchaseSuccessful(purchase: product)
-            case .failure(let error):
-                print("Product purchased! - \(product.purchaseName) - \(error)")
-                DispatchQueue.main.async {
-                self.delegate?.purchaseFailed(purchase: product, error: error)
+        iapService.buy(product: product) { (result) in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(_):
+                    print("Product purchased! - \(product.purchaseName)")
+                    // self.validatePurchase()
+                    //self.delegate?.purchaseSuccessful(purchase: product)
+                case .failure(let error):
+                    print("Product purchased! - \(product.purchaseName) - \(error)")
+                    DispatchQueue.main.async {
+                        self.delegate?.purchaseFailed(purchase: product, error: error)
+                    }
                 }
             }
         }
-    }
     }
     
     public func populateProductList(withProducts:[String]? = nil){
@@ -146,7 +145,7 @@ public class AMGPurchases: IAPDelegate {
             switch result {
             case .success(let amgProducts):
                 DispatchQueue.main.async {
-                self.delegate?.purchasesAvailable(purchases: amgProducts)
+                    self.delegate?.purchasesAvailable(purchases: amgProducts)
                 }
             case .failure(let error):
                 print("Call failed - \(error.localizedDescription)")

@@ -35,6 +35,7 @@ public struct AMGPlayKitStandardControlsConfigurationModel: Codable {
     var vodTrack = "#71ABF3"
     
     var bitrateSelector = false
+    var subTitlesSelector = false
 }
 
 /**
@@ -70,6 +71,7 @@ public class AMGControlBuilder {
     var vodTrack = "#71ABF3"
 
     var bitrateSelector = false
+    var subTitlesSelector = false
     
     /**
     Specify the image to use for the play button
@@ -279,12 +281,20 @@ public class AMGControlBuilder {
         bitrateSelector = isOn
         return self
     }
+    
+    /**
+     Toggle the visibility of the subtitles selector
+     */
+    public func setSubtitlesSelector(_ isOn: Bool) -> AMGControlBuilder {
+        subTitlesSelector = isOn
+        return self
+    }
 
     /**
      Returns a complete and valid AMGPlayKitStandardControlsConfigurationModel
      */
     public func build() -> AMGPlayKitStandardControlsConfigurationModel {
-        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack, bitrateSelector: bitrateSelector)
+        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack, bitrateSelector: bitrateSelector, subTitlesSelector: subTitlesSelector)
         
         
         

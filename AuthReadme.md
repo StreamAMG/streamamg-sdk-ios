@@ -61,14 +61,13 @@ var auth = AuthenticationSDK.instance
 It is required that a valid authentication URL is passed to the SDK before it is usable:
 
 ```
-auth.initialiseWithURL("https:validURL.test.com/")
+auth.initialiseWithURL("https:validURL.test.com")
 ```
-The URL should be followed by a trailing front slash
 
 It is also possible to pass other URL parameters to the SDK here:
 
 ```
-auth.initialiseWithURL("https:validURL.test.com/", params:"lang=en&otherParam=otherValue")
+auth.initialiseWithURL("https:validURL.test.com", params:"lang=en&otherParam=otherValue")
 ```
 
 Logging In
@@ -142,11 +141,59 @@ auth.getKS(entryID: "0_validEntryID") { (result: Result<(SAKSResult, String), St
     }
 }
 ```
+Using custom SSO
+=======================
+Authentication SDK supports custom SSO implementation that are correctly configured with CloudPay and are able to generate a valid use JWT token.
+
+## Start the session with custom SSO
+
+In order to communicate with CloudPay the app needs to start the session with the users token generated. This is an optional step and required only if you are not using cloud pay login but you want to start a user session to to log the sessions and so get CloudPay check the concurrency.
+
+
+```
+auth.startSession(token: tokens.idToken) { error in
+  if error != nil {
+   // Handle error
+  } else {
+   // Session sucessfully created
+  }                             
+}
+```
+## Update user summary
+The update user summary function allows a user to update their user details. Please be aware that the API cannot edit the user's email.
+
+This function needs to be utilised after a new user is registered and every time the user wants to update the metadata.
+
+```
+auth.updateUserSummaryWithUserToken(token: tokens.idToken, firstName: "Name", lastName: "Surname") {(result: Result<UserSummaryResponse, StreamAMGError>) in
+  switch result {
+   case .success(let data):
+    // User data sucessfully updated.
+   case .failure(let error):
+    // Update user summary failed.                                          
+  }
+}
+```
+## Retrieve the User's Summary
+
+Returns an account summary of the Authenticated User.
+
+```
+auth.getUserSummary(token: tokens.idToken) { (result: Result<UserSummaryResponse, StreamAMGError>) in
+ switch result {
+  case .success(let data):
+  // Get user data success
+  case .failure(let error):
+  // Get user data failed
+ }
+}
+```
 
 Change Log:
 ===========
 
 All notable changes to this project will be documented in this section.
+### 1.1.10 - Added support to start session with custom SSO
 
 ### 1.0 - Release
 
