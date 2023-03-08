@@ -113,6 +113,7 @@ public protocol AMGPurchaseDelegate {
     func purchaseSuccessful(purchase: AMGInAppPurchase)
     func purchaseFailed(purchase: AMGInAppPurchase, error: StreamAMGError)
     func purchasesAvailable(purchases: [AMGInAppPurchase])
+    func onFailedToRetrieveProducts(code: Int, error: [String])
 }
 ```
 
@@ -222,6 +223,8 @@ Change Log:
 ===========
 
 All notable changes to this project will be documented in this section.
+### 1.2.0 - Updated AMGPurchaseDelegate to include error listener when products retrieval fails
+
 ### 1.1.10 - Updated valdiatePurchase API to accept custom JWT Token
 
 ### 1.0 - Release

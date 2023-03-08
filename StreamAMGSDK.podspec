@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "StreamAMGSDK"
-  spec.version      = "1.1.10"
+  spec.version      = "1.2.0"
   spec.summary      = "Stream AMG SDK"
   spec.swift_versions = "5"
 
@@ -17,13 +17,12 @@ Pod::Spec.new do |spec|
   spec.author       = "StreamAMG"
 
   spec.platform     = :ios
-  spec.ios.deployment_target = '11.0'
+  spec.ios.deployment_target = '12.0'
   spec.source_files  = "Source/**/*.swift"
 
   spec.source = { :git => 'https://github.com/StreamAMG/streamamg-sdk-ios', :branch => 'master', :submodules => true}
 
-  spec.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
-  spec.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
+
 
   spec.subspec 'Core' do |sdkcore|
   spec.requires_arc = true
@@ -57,7 +56,7 @@ end
 spec.subspec 'PlayKit' do |playkit|
 playkit.source_files  = "Source/StreamSDKPlayKit/**/*.*"
 playkit.dependency 'PlayKit', '3.27.0'
-playkit.dependency 'PlayKit_IMA', '1.13.0'
+playkit.dependency 'PlayKit_IMA', '1.14.0'
 playkit.dependency 'PlayKitProviders', '1.18.0'
 playkit.dependency 'PlayKitYoubora', '1.15.0'
 playkit.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.*'}

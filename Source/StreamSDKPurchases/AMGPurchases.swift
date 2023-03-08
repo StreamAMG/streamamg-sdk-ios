@@ -42,10 +42,16 @@ public class AMGPurchases: IAPDelegate {
         iapService.stopObserving()
     }
     
+    /// With this API, you can validate purchases against CP using the JWT token from the last login response.
+    /// - Parameter payment: Payment model
     public func validatePurchase(payment: ReceiptPaymentModel?) {
         self.validatePurchase(payment: payment, withJWTToken: auth.lastLoginResponse?.authenticationToken)
     }
     
+    /// This API is intended for custom SSO integrations and enables the validation of purchases against CP.
+    /// - Parameters:
+    ///   - payment: Payment model
+    ///   - withJWTToken: User JWT Token
     public func validatePurchase(payment: ReceiptPaymentModel?, withJWTToken: String?) {
         guard
             let receiptUrl = Bundle.main.appStoreReceiptURL,
@@ -110,9 +116,7 @@ public class AMGPurchases: IAPDelegate {
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):
-                    print("Product purchased! - \(product.purchaseName)")
-                    // self.validatePurchase()
-                    //self.delegate?.purchaseSuccessful(purchase: product)
+                    print("Product purchased on the AppStore, validation in progress. - \(product.purchaseName)")
                 case .failure(let error):
                     print("Product purchased! - \(product.purchaseName) - \(error)")
                     DispatchQueue.main.async {
@@ -134,7 +138,7 @@ public class AMGPurchases: IAPDelegate {
                     
                     
                 case .failure(let error):
-                    print("Could not populate products list - \(error.getMessages())")
+                    self.delegate?.onFailedToRetrieveProducts(code: error.code, error: error.getAllMessages())
                 }
             }
         }
@@ -148,7 +152,7 @@ public class AMGPurchases: IAPDelegate {
                     self.delegate?.purchasesAvailable(purchases: amgProducts)
                 }
             case .failure(let error):
-                print("Call failed - \(error.localizedDescription)")
+                self.delegate?.onFailedToRetrieveProducts(code: -1, error: [error.localizedDescription])
             }
         }
     }

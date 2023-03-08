@@ -36,7 +36,7 @@ Purchases:
 Requirements
 ----------------
 
-- iOS 11.3+
+- iOS 12+
 - Xcode 12.0+
 
 Installation
@@ -101,6 +101,11 @@ Change Log:
 ---------------
 
 All notable changes to this project will be documented in this section.
+
+### 1.2.0 
+- Updated PlayKit module.
+- Updated requirement min iOS SDK to 12+.
+- Updated AMGPurchaseDelegate to include error listener when products retrieval fails
 
 ### 1.1.10 - Integrated Playkit Subtitles UI, Updated AuthSDK to support custom SSO session and enabled validatePurchase method in Purchases SDK  to accept custom JWT Token.
 
