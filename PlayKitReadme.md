@@ -761,6 +761,10 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 
 All notable changes to this project will be documented in this section.
 
+### 1.2.0
+- Updated PlaKit IMA
+- Added support for arm64
+
 ### 1.1.10
 - Integrated Subtitles UI
 

@@ -11,4 +11,5 @@ public protocol AMGPurchaseDelegate {
     func purchaseSuccessful(purchase: AMGInAppPurchase)
     func purchaseFailed(purchase: AMGInAppPurchase, error: StreamAMGError)
     func purchasesAvailable(purchases: [AMGInAppPurchase])
+    func onFailedToRetrieveProducts(code: Int, error: [String])
 }
