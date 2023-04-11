@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PlayKit
 
 public protocol AMGPlayerDelegate: AnyObject {
     func play()
@@ -17,11 +18,11 @@ public protocol AMGPlayerDelegate: AnyObject {
     func cancelTimer()
     func startControlVisibilityTimer()
     func goLive()
-    func selectSubtitlesTrack(trackId:String)
     func minimise()
     func fullScreen()
     func setBitrateAuto()
     func setMaximumBitrate(bitrate: FlavorAsset?)
+    func setTrack(track: Track)
 }
 
 

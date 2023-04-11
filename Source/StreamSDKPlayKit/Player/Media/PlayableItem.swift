@@ -91,8 +91,8 @@ public extension PlayableItem {
         var externalSubtitles:[PKExternalSubtitle] = []
         
         for value in objectExist{
-            guard let serverURL = serverURL, let captionAssetID = value.id, let languageName = value.language, let languageCode = value.languageCode else {
-                break
+            guard let serverURL = serverURL, let captionAssetID = value.id, let languageName = ((value.label ?? "").isEmpty ? value.language : value.label), let languageCode = value.languageCode, value.status != -1 else {
+                continue
             }
             
             let url = "\(serverURL)/api_v3/index.php/service/caption_captionasset/action/serveWebVTT/captionAssetId/\(captionAssetID)/segmentIndex/-1/version/2/captions.vtt"

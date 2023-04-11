@@ -823,7 +823,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         }
         
         selectedCaption = myTag
-        player?.selectSubtitlesTrack(trackId: self.tracks[myTag].id )
+        player?.setTrack(track: self.tracks[myTag])
         closeSubtitlesView()
         return
     }
@@ -831,5 +831,9 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
     func clearTracks() {
         self.selectedCaption = 0
         self.tracks.removeAll()
+    }
+    
+    func setCaptionOnSelector(index: Int) {
+        self.selectedCaption = index
     }
 }

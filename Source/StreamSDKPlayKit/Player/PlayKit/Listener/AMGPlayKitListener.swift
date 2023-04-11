@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PlayKit
 
 public protocol AMGPlayKitListener: AnyObject {
     func playEventOccurred(state: AMGPlayKitState)
@@ -14,4 +15,5 @@ public protocol AMGPlayKitListener: AnyObject {
     func durationChangeOccurred(state: AMGPlayKitState)
     func errorOccurred(error: AMGPlayKitError)
     func bitrateChangeOccurred(list: [FlavorAsset]?)
+    func tracksAvailable(tracks: PKTracks)
 }
