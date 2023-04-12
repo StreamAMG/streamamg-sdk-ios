@@ -745,21 +745,39 @@ func bitrateChangeOccurred(list: [FlavorAsset]?) {
 }
 ```
 
-### Subtitle
+### Track and Subtitle Selection
 
- To display subtitles or captions for a video subscribe to the player events as below,
- ```Swift
- self.playKit.player?.addObserver(self, events: [PlayerEvent.tracksAvailable, PlayerEvent.textTrackChanged, PlayerEvent.audioTrackChanged])
-      { [weak self] event in
-           if let tracksExist = event.tracks?.textTracks {
-               self?.playKit.player?.selectTrack(trackId: tracksExist.last?.id ?? "")
-           }
-       }
-  ```
+To instruct PlayKit to use a certain track when streaming (if available), you can use the following function:
+
+``` Swift
+playKit.changeTrack(id: String)
+```
+
+PlayKit will atttempt to change the track to the chosen one for the rest of the stream. The id of the track should be the id of the available Tracks
+
+PlayKit has a listener (`AMGPlayKitListener`) that contains a method (`tracksAvailable`) that gives you the list of available tracks (`PKTracks`) including the text tracks (subtitle) when ready:
+``` Swift
+override fun tracksAvailable(tracks: PKTracks) {
+
+}
+```
+
+Once the tracks are available and ready, is possible to filter and select the chosen track in this way:
+``` Swift
+if let track = tracks.textTracks?.first(where: { $0.language == "en"}) {
+    playKit.changeTrack(id: track.id)
+}
+```
+
+Hovewer, PlayKit will take care to select the default caption track once the video will be loaded.
 
 # Change Log
 
 All notable changes to this project will be documented in this section.
+
+### 1.2.1
+- Default subtitle track auto-selected
+- Get Label caption on subtitle selector
 
 ### 1.2.0
 - Updated PlaKit IMA

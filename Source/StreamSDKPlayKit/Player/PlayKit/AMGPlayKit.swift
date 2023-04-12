@@ -68,6 +68,7 @@ import AVKit
     
     var tap: UITapGestureRecognizer? = nil
     var listBitrate: [FlavorAsset]? = []
+    internal var tracks: PKTracks? = nil
     
     /**
      Standard initialisation
@@ -342,6 +343,17 @@ import AVKit
         playHeadObserver = self.player?.addPeriodicObserver(interval: 0.1, observeOn: DispatchQueue.main, using: { [weak self] (pos) in
             self?.control?.changePlayHead(position: pos)
         })
+        self.player?.addObserver(self, events: [PlayerEvent.tracksAvailable]) { [weak self] event in
+            self?.tracks = event.tracks
+            if let textTracks = event.tracks?.textTracks {
+                self?.checkDefaultCaptionTrack(textTracks: textTracks)
+                self?.controlUI?.createSubtitlesSelector(withTracks: textTracks)
+            }
+            if let tracksExist = self?.tracks {
+                self?.listener?.tracksAvailable(tracks: tracksExist)
+            }
+        }
+        
         playerView = PlayerView.createPlayerView(forPlayer: player!)  //PlayerView(frame: frame)
         playerView?.frame = self.bounds
         playerView?.contentMode = .scaleAspectFill
@@ -526,8 +538,6 @@ import AVKit
             
             fetchTracksData(server: serverUrl, entryID: entryID, partnerID: partnerID, ks: ks) { [self] captionAssetElement in
                 DispatchQueue.main.async {
-                    //Start listenting to changes in subtitle tracks
-                    self.observeTrackChanges()
                     self.loadMedia(media: MediaItem(serverUrl: serverUrl, partnerId: self.partnerID, entryId: entryID, ks: ks, title: title, mediaType: kalturaMediaType, drmLicenseURI: drmLicenseURI, drmFPSCertificate: drmFPSCertificate, captionAsset: captionAssetElement), mediaType: mediaType, startPosition: startPosition)
                 }
             }
@@ -718,7 +728,52 @@ import AVKit
         analyticsConfiguration.updateYouboraParameter(id: id, value: value)
     }
     
+    @available(*, deprecated, message: "This method is no longer available. Use changeTrack instead.")
     public func selectSubtitlesTrack(trackId: String) {
         self.player?.selectTrack(trackId: trackId)
+    }
+    
+    public func setTrack(track: Track) {
+        changeTrack(id: track.id)
+    }
+    
+    public func changeTrack(id: String) {
+        self.player?.selectTrack(trackId: id)
+        if let trackIndex = self.tracks?.textTracks?.firstIndex(where: {$0.id == id}) {
+            self.controlUI?.setCaptionOnSelector(index: trackIndex)
+        }
+    }
+    
+    public func getTracks() -> PKTracks? {
+        return self.tracks
+    }
+    
+    func checkDefaultCaptionTrack(textTracks: [Track]) {
+        // TODO: Select default caption
+        self.controlUI?.setCaptionOnSelector(index: 0)
+        if let captions = self.currentMedia?.captionAssets?.objects {
+            for caption in captions { // Find the Label first
+                if caption.isDefault == true {
+                    if let defaultIndexCaptionTrack = textTracks.firstIndex(where: {$0.title == caption.label}) {
+                        if defaultIndexCaptionTrack >= 0 {
+                            self.player?.selectTrack(trackId: textTracks[defaultIndexCaptionTrack].id)
+                            self.controlUI?.setCaptionOnSelector(index: defaultIndexCaptionTrack)
+                            return
+                        }
+                    }
+                }
+            }
+            for caption in captions { // As fallback, find the Language if Label not set
+                if caption.isDefault == true {
+                    if let defaultIndexCaptionTrack = textTracks.firstIndex(where: {$0.title == caption.language}) {
+                        if defaultIndexCaptionTrack >= 0 {
+                            self.player?.selectTrack(trackId: textTracks[defaultIndexCaptionTrack].id)
+                            self.controlUI?.setCaptionOnSelector(index: defaultIndexCaptionTrack)
+                            return
+                        }
+                    }
+                }
+            }
+        }
     }
 }
