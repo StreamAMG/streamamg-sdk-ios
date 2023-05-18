@@ -11,7 +11,23 @@ public struct MediaContext: Codable {
     public let flavorAssets: [FlavorAsset]
     
     public func fetchBitrates() -> [FlavorAsset] {
-        return flavorAssets.sorted(by: {$0.width ?? 0 < $1.width ?? 0})
+        var uniqueAssets: [Int: FlavorAsset] = [:] // Dictionary to store unique assets by height
+        
+        for flavorAsset in flavorAssets {
+            if let height = flavorAsset.height {
+                if let existingAsset = uniqueAssets[Int(height)] {
+                    if let existingBitrate = existingAsset.bitrate, let currentBitrate = flavorAsset.bitrate {
+                        if existingBitrate < currentBitrate {
+                            uniqueAssets[Int(height)] = flavorAsset // Replace with higher bitrate asset
+                        }
+                    }
+                } else {
+                    uniqueAssets[Int(height)] = flavorAsset // Add new unique asset
+                }
+            }
+        }
+        
+        return Array(uniqueAssets.values).sorted { $0.bitrate ?? 0 < $1.bitrate ?? 0 } // Convert dictionary values to an array and return it sorted
     }
 }
 
