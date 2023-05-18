@@ -737,7 +737,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             button.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
             self.bitrateScroll.addSubview(button)
             withBitrateList.forEach { bitrate in
-                let button = createButtonLabel(text: "\(bitrate.bitrate ?? 0)", width: maxWidth, index: count, selectedIndex: self.selectedBitrate, colors: selectorColors)
+                let button = createButtonLabel(text: "\(bitrate.height ?? 0)p", width: maxWidth, index: count, selectedIndex: self.selectedBitrate, colors: selectorColors)
                 button.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
                 self.bitrateScroll.addSubview(button)
                 count += 1
@@ -770,6 +770,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         tText.setTitle(text, for: .normal)
         tText.setTitleColor(.white, for: .normal)
         tText.contentHorizontalAlignment = .left
+        tText.titleLabel?.lineBreakMode = .byWordWrapping
         tText.titleEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
         
         if index == selectedIndex {
