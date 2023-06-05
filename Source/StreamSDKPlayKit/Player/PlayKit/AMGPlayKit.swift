@@ -348,6 +348,8 @@ import AVKit
             if let textTracks = event.tracks?.textTracks {
                 self?.checkDefaultCaptionTrack(textTracks: textTracks)
                 self?.controlUI?.createSubtitlesSelector(withTracks: textTracks)
+            } else {
+                self?.controlUI?.createSubtitlesSelector(withTracks: [])
             }
             if let tracksExist = self?.tracks {
                 self?.listener?.tracksAvailable(tracks: tracksExist)

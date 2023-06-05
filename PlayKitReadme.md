@@ -211,6 +211,11 @@ Specify the image to use for the fullscreen button
 .fullScreenImage(_ image: String)
 ```
 
+Specify the image to use for the minimise button
+``` Swift
+.minimiseImage(_ image: String)
+```
+
 Hide the 'fullscreen' button when the player is not in full screen
 ``` Swift
 .hideFullScreenButton()

@@ -379,6 +379,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             settingsButton.setImage(settingsImage, for: .normal)
             settingsButton.addTarget(self, action: #selector(openBitrateView), for: .touchUpInside)
             settingsButton.layer.cornerRadius = 8
+            settingsButton.isHidden = true
             mainView.addSubview(settingsButton)
         }
         
@@ -393,6 +394,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
             subtitlesButton.setImage(subtitlesImage, for: .normal)
             subtitlesButton.addTarget(self, action: #selector(openSubtitlesView), for: .touchUpInside)
             subtitlesButton.layer.cornerRadius = 8
+            subtitlesButton.isHidden = true
             mainView.addSubview(subtitlesButton)
         }
         
@@ -402,7 +404,6 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         
 
     }
-
     
     func updateIsLive(){
         DispatchQueue.main.async { [self] in
@@ -661,7 +662,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         
         //  If bitrate selector is visible , then display subtitles button next to bitrate selector ,
         //  else move subtitles button to end of frame
-        if configModel.bitrateSelector {
+        if configModel.bitrateSelector && !settingsButton.isHidden {
             subtitlesButton.frame = CGRect(x: settingsButton.frame.origin.x - subtitlesButton.frame.width, y: h - skipSize - 5, width: skipSize, height: skipSize)
         } else {
             subtitlesButton.frame = CGRect(x: w - skipSize - 20, y: h - skipSize - 5, width: skipSize, height: skipSize)
@@ -700,6 +701,15 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         var count = 0
         DispatchQueue.main.async { [self] in
             self.subtitlesScroll.removeFromSuperview()
+            
+            if withTracks.isEmpty {
+                subtitlesButton.isHidden = true
+                return
+            } else {
+                subtitlesButton.isHidden = false
+            }
+            resize()
+            
             self.subtitlesScroll = self.createContentScroll(scrollViewWidth: maxWidth, itemCount: self.tracks.count)
             
             self.tracks.forEach { track in
@@ -730,8 +740,15 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         var count = 1
         DispatchQueue.main.async { [self] in
             self.bitrateScroll.removeFromSuperview()
-            self.bitrateScroll = createContentScroll(scrollViewWidth: maxWidth, itemCount: self.bitrates.count + 1)
             
+            if withBitrateList.isEmpty {
+                settingsButton.isHidden = true
+                return
+            } else {
+                settingsButton.isHidden = false
+            }
+            
+            self.bitrateScroll = createContentScroll(scrollViewWidth: maxWidth, itemCount: self.bitrates.count + 1)
             
             let button = createButtonLabel(text: "Auto", width: maxWidth, index: 0, selectedIndex: self.selectedBitrate, colors: selectorColors)
             button.addTarget(self, action: #selector(swapBitRate(button:)), for: .touchUpInside)
