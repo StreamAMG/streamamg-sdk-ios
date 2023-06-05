@@ -98,6 +98,14 @@ public class AMGControlBuilder {
     }
     
     /**
+    Specify the image to use for the minimise button
+     */
+    public func minimiseImage(_ image: String) -> AMGControlBuilder {
+        self.minimiseImage = image
+        return self
+    }
+    
+    /**
     Specify the image to use for the skip forwards button
      */
     public func skipForwardImage(_ image: String) -> AMGControlBuilder {
@@ -294,7 +302,7 @@ public class AMGControlBuilder {
      Returns a complete and valid AMGPlayKitStandardControlsConfigurationModel
      */
     public func build() -> AMGPlayKitStandardControlsConfigurationModel {
-        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack, bitrateSelector: bitrateSelector, subTitlesSelector: subTitlesSelector)
+        return AMGPlayKitStandardControlsConfigurationModel(fadeInTogglesPausePlay: fadeInTogglesPausePlay, fadeInTime: fadeInTime, fadeOutTime: fadeOutTime, fadeOutAfter: fadeOutAfter, trackTimeShowing: trackTimeShowing, isLiveImage: isLiveImage, logoImage: logoImage, playImage: playImage, pauseImage: pauseImage, skipForwardImage: skipForwardImage, skipBackwardImage: skipBackwardImage, fullScreenImage: fullScreenImage, minimiseImage: minimiseImage, hideFullscreen: hideFullscreen, hideMinimise: hideMinimise, liveTrack: liveTrack, vodTrack: vodTrack, bitrateSelector: bitrateSelector, subTitlesSelector: subTitlesSelector)
         
         
         
