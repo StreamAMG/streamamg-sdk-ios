@@ -222,15 +222,4 @@ If you are using custom token to validate the purchase, we recommend using the s
 Change Log:
 ===========
 
-All notable changes to this project will be documented in this section.
-### 1.2.0 - Updated AMGPurchaseDelegate to include error listener when products retrieval fails
-
-### 1.1.10 - Updated valdiatePurchase API to accept custom JWT Token
-
-### 1.0 - Release
-
-### Beta releases
-
-### 0.10 - Purchases Module added to SDK
-
-### 0.1 -> 0.9 - No Purchases Module
+All notable changes to this project will be documented [here](Changelog.md)

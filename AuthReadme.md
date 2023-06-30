@@ -192,13 +192,4 @@ auth.getUserSummary(token: tokens.idToken) { (result: Result<UserSummaryResponse
 Change Log:
 ===========
 
-All notable changes to this project will be documented in this section.
-### 1.1.10 - Added support to start session with custom SSO
-
-### 1.0 - Release
-
-### Beta releases
-
-### 0.2 -> 0.11 - No changes to Authentication
-
-### 0.1 - Initial build
+All notable changes to this project will be documented [here](Changelog.md)
