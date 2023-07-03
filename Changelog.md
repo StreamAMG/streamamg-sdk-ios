@@ -3,6 +3,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.2.4 - Fixed StreamPlay FixtureID field types
+
 ### 1.2.3
 - Improved bitrate/subtitle icon logic
 - Added custom minimise icon

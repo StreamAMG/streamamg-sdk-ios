@@ -126,9 +126,9 @@ public struct FixturesModel: Codable {
  * Any external IDs that tie with this fixture
  */
 public struct ExternalIDModel: Codable {
-    public var optaFixtureId: Int?
-    public var paFixtureId: Int?
-    public var sportsradarFixtureId: Int?
+    public var optaFixtureId: String?
+    public var paFixtureId: String?
+    public var sportsradarFixtureId: String?
 }
 
 /**
