@@ -56,7 +56,9 @@ class HeatMap {
             if (currentTime < sectionStart || currentTime > sectionEnd) {
                 markNewSection(currentTime: currentTime)
             } else if currentSectionCount > 5 {
-                heatMap[currentSection] = 1
+                if currentSection < heatMap.count {
+                    heatMap[currentSection] = 1
+                }
             } else {
                 currentSectionCount += 1
             }
