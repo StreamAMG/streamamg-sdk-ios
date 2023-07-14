@@ -601,6 +601,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
         if !time.isFinite || time.isNaN {
             self.errorListener?.onError(error: PlaykitError(entryID: nil, errorParameter: "\(time)", exception: "Failed to convert time to String"))
+            return ""
         }
         var formattedTimeLeft = formatter.string(from: time)!
         let formattedSplit = formattedTimeLeft.split(separator: ":")
