@@ -368,7 +368,7 @@ public struct CloudMatrixMetaDataModel: Codable {
      * Will return a null if the key does not exist, would return an object that is not an Int value or would return an Int that would overflow
      */
     public func getInt(key: String) -> Int? {
-        return dictionary?[key] as! Int?
+        return dictionary?[key] as? Int
     }
     
     /**
@@ -376,7 +376,7 @@ public struct CloudMatrixMetaDataModel: Codable {
      * Will return a null if the key does not exist or would return an object that is not a Double / Float value
      */
     public func getDouble(key: String) -> Double? {
-        return dictionary?[key] as! Double?
+        return dictionary?[key] as? Double
     }
     
     /**
@@ -384,7 +384,7 @@ public struct CloudMatrixMetaDataModel: Codable {
      * Will return a null if the key does not exist or would return an object that is not a Long / Int value
      */
     public func getLong(key: String) -> Int64? {
-        return dictionary?[key] as! Int64?
+        return dictionary?[key] as? Int64
     }
     
     /**
@@ -392,7 +392,7 @@ public struct CloudMatrixMetaDataModel: Codable {
      * Will return a null if the key does not exist or would return an object that is not a Boolean value
      */
     public func getBool(key: String) -> Bool? {
-        return dictionary?[key] as! Bool?
+        return dictionary?[key] as? Bool
     }
     
     /**
