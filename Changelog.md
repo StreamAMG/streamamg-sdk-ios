@@ -3,6 +3,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.2.7 - Updated PlayKit version 
+
 ### 1.2.6 - Fixed an issue with CloudMatrix response
 
 ### 1.2.5 - Fixed crashlytics crash
