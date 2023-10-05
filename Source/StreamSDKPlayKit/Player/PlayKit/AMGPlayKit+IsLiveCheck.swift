@@ -16,7 +16,7 @@ extension AMGPlayKit {
         }
             let session = URLSession.shared
         var urlRequest = URLRequest(url: validURL)
-        urlRequest.httpMethod = "POST"
+        urlRequest.httpMethod = "GET"
         let request = session.dataTask(with: urlRequest) {data, response, error in
             if let data = data, let resp = String(data: data, encoding: .utf8) {
                 if resp.lowercased() == "true" {
@@ -41,7 +41,7 @@ extension AMGPlayKit {
         }
             let session = URLSession.shared
         var urlRequest = URLRequest(url: validURL)
-        urlRequest.httpMethod = "POST"
+        urlRequest.httpMethod = "GET"
         let request = session.dataTask(with: urlRequest) {data, response, error in
             
             if let data = data {
