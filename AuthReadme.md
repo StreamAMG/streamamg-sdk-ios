@@ -189,6 +189,36 @@ auth.getUserSummary(token: tokens.idToken) { (result: Result<UserSummaryResponse
 }
 ```
 
+## Logout with custom SSO
+
+If you are using custom SSO, to logout from cloudpay, use this method to logout by passing the token you previously used to start the SSO.
+
+```
+auth.logoutWithToken(token: tokens.idToken) { (result: Result<SAResult, StreamAMGError>) in
+ switch result {
+  case .success(let status):
+  // Get logout status
+  case .failure(let error):
+  // Get error
+ }
+}
+```
+
+## GetKS with custom SSO
+
+If you are using custom SSO, then to get the user entitlements use this method. Please pass the same token you used to start the custom SSO  session.
+
+```
+auth.getKSWithToken(token: tokens.idToken, entryID: "0_validEntryID") { (result: Result<(SAKSResult, String), StreamAMGError>) in
+    switch result {
+    case .success(let response):
+        // response.1 is the valid KS
+    case .failure(let error):
+        // error includes the reason the Key Session is not provided
+    }
+}
+```
+
 Change Log:
 ===========
 

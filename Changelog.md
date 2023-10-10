@@ -3,9 +3,11 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
-### 1.2.8 - Updated MediaType APIs from POST to GET
+### 1.2.9 - Updated Authentication module with new methods to logout and getKS with third party JWT tokens.
 
-### 1.2.7 - Updated PlayKit version 
+### 1.2.8 - Updated Bitrate & mediaType APIs from POST to GET
+
+### 1.2.7 - Updated PlayKit version
 
 ### 1.2.6 - Fixed an issue with CloudMatrix response
 
@@ -24,7 +26,7 @@ All notable changes to this project will be documented in this section.
 - Default subtitle track auto-selected
 - Get Label caption on subtitle selector
 
-### 1.2.0 
+### 1.2.0
 - Updated PlayKit module.
 - Updated requirement min iOS SDK to 12+.
 - Updated AMGPurchaseDelegate to include error listener when products retrieval fails
