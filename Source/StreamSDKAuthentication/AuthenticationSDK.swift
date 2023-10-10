@@ -112,28 +112,50 @@ public class AuthenticationSDK {
      * @param completion Completion block capturing StreamAMGUserModel or StreamAMGError
      */
     public func logout(completion: ((Result<SAResult, StreamAMGError>) -> Void)?){
-        guard let apiURL = url else {
-            let error = StreamAMGError(message: "Authentication API URL not set")
-            completion?(.failure(error))
-            return
-        }
         guard let token = lastLoginResponse?.authenticationToken else {
             let error = StreamAMGError(message: "User is not logged in")
             completion?(.failure(error))
             return
         }
-        StreamAMGSDK.sendRequest(logoutURL(url: apiURL, token: token)){ (result: Result<LoginResponse, StreamAMGError>) in
+        self.logoutWithToken(token: token, completion: completion)
+    }
+    
+    
+    /**
+     Logs out a user by sending a logout request with the provided token.
+
+     - Parameters:
+        - token: The authentication token for the user.
+        - completion: A closure to be called upon completion of the logout operation. It takes a `Result` enum as an argument, which can contain either a `.success` with a `SAResult` or a `.failure` with a `StreamAMGError`.
+
+     - Note: Make sure the `url` property is properly set before calling this method.
+
+     This function sends a logout request to the authentication API and handles the response accordingly.
+     */
+    public func logoutWithToken(token: String, completion: ((Result<SAResult, StreamAMGError>) -> Void)?) {
+        // Check if the API URL is set
+        guard let apiURL = url else {
+            let error = StreamAMGError(message: "Authentication API URL not set")
+            completion?(.failure(error))
+            return
+        }
+        
+        // Send the logout request
+        StreamAMGSDK.sendRequest(logoutURL(url: apiURL, token: token)) { (result: Result<LoginResponse, StreamAMGError>) in
             switch result {
             case .success(_):
+                // Clear the last login response and remove stored data upon successful logout
                 self.lastLoginResponse = nil
                 self.removeStoredData()
                 completion?(.success(.SALogoutOK))
             case .failure(let error):
+                // Clear the last login response and report the error in case of failure
                 self.lastLoginResponse = nil
                 completion?(.failure(error))
             }
         }
     }
+
     
     
     /// In order to perform queries against the CloudPay API a user must first initialise a session. This can be done for SSO users by generating a SSO Session.
@@ -245,21 +267,40 @@ public class AuthenticationSDK {
      * @param completion Completion block capturing StreamAMGUserModel or StreamAMGError
      */
     public func getKS(entryID: String, completion: ((Result<(SAKSResult, String), StreamAMGError>) -> Void)?){
-        guard let apiURL = url else {
-            let error = StreamAMGError(message: "Authentication API URL not set")
-            completion?(.failure(error))
-            return
-        }
         guard let token = lastLoginResponse?.authenticationToken else {
             let error = StreamAMGError(message: "User is not logged in")
             completion?(.failure(error))
             return
         }
-        StreamAMGSDK.sendRequest(ksURL(url: apiURL, entryID: entryID, token: token)){ (result: Result<LoginResponse, StreamAMGError>) in
+        self.getKSWithToken(token: token, entryID: entryID, completion: completion)
+    }
+    
+    /**
+     Retrieves a Key Session (KS) for a specific entry using the provided token.
+
+     - Parameters:
+        - token: The authentication token for the user.
+        - entryID: The ID of the entry for which the KS is requested.
+        - completion: A closure to be called upon completion of the KS retrieval operation. It takes a `Result` enum as an argument, which can contain either a `.success` with a tuple of `SAKSResult` and the KS string or a `.failure` with a `StreamAMGError`.
+
+     - Note: Ensure that the `url` property is properly set before calling this method.
+
+     This function sends a request to retrieve a Key Session (KS) for a specific entry and handles the response accordingly.
+     */
+    public func getKSWithToken(token: String, entryID: String, completion: ((Result<(SAKSResult, String), StreamAMGError>) -> Void)?) {
+        // Check if the API URL is set
+        guard let apiURL = url else {
+            let error = StreamAMGError(message: "Authentication API URL not set")
+            completion?(.failure(error))
+            return
+        }
+        
+        // Send the KS retrieval request
+        StreamAMGSDK.sendRequest(ksURL(url: apiURL, entryID: entryID, token: token)) { (result: Result<LoginResponse, StreamAMGError>) in
             switch result {
             case .success(let data):
-                if let status = SAKSResult(rawValue: data.status ?? -2){
-                    switch status{
+                if let status = SAKSResult(rawValue: data.status ?? -2) {
+                    switch status {
                     case .Granted:
                         if let session = data.kSession {
                             completion?(.success((.Granted, session)))
@@ -287,6 +328,7 @@ public class AuthenticationSDK {
             }
         }
     }
+
     
     func securelyStoreEmailAndPass(email: String, password: String){
         _ = KeyChain.store(key: "authEmail", data: email)
