@@ -3,6 +3,8 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.3.0 - Updated Authentication module with new methods validate active session with third party JWT tokens.
+
 ### 1.2.9 - Updated Authentication module with new methods to logout and getKS with third party JWT tokens.
 
 ### 1.2.8 - Updated Bitrate & mediaType APIs from POST to GET

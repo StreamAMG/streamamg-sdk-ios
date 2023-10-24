@@ -15,6 +15,7 @@ public struct UserSummaryResponse: Codable {
     let customFields: [CustomField]?
     let billingDetails: BillingDetails?
     let subscriptions: [Subscription]?
+    let entitlements : String?
 
     enum CodingKeys: String, CodingKey {
         case emailAddress = "EmailAddress"
@@ -26,6 +27,7 @@ public struct UserSummaryResponse: Codable {
         case status = "status"
         case error = "error"
         case message = "message"
+        case entitlements = "Entitlements"
     }
 }
 
