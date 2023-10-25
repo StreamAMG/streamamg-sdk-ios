@@ -9,13 +9,13 @@ import Foundation
 
 // MARK: - UserSummaryResponse
 public struct UserSummaryResponse: Codable {
-    let emailAddress, firstName, lastName: String?
-    let status, error, message: String?
+    public let emailAddress, firstName, lastName: String?
+    public let status, error, message: String?
     
-    let customFields: [CustomField]?
-    let billingDetails: BillingDetails?
-    let subscriptions: [Subscription]?
-    let entitlements : String?
+    public let customFields: [CustomField]?
+    public let billingDetails: BillingDetails?
+    public let subscriptions: [Subscription]?
+    public let entitlements : [String]?
 
     enum CodingKeys: String, CodingKey {
         case emailAddress = "EmailAddress"
@@ -33,9 +33,9 @@ public struct UserSummaryResponse: Codable {
 
 // MARK: - BillingDetails
 public struct BillingDetails: Codable {
-    let addressCountry, addressCity, addressLine1, addressLine2: String
-    let addressState, addressZip: String
-    let cardDetails: CardDetails
+    public let addressCountry, addressCity, addressLine1, addressLine2: String
+    public let addressState, addressZip: String
+    public let cardDetails: CardDetails
 
     enum CodingKeys: String, CodingKey {
         case addressCountry = "AddressCountry"
@@ -50,8 +50,8 @@ public struct BillingDetails: Codable {
 
 // MARK: - CardDetails
 public struct CardDetails: Codable {
-    let provider, reference, country: String
-    let expires: Date
+    public let provider, reference, country: String
+    public let expires: Date
 
     enum CodingKeys: String, CodingKey {
         case provider = "Provider"
@@ -63,9 +63,9 @@ public struct CardDetails: Codable {
 
 // MARK: - CustomField
 public struct CustomField: Codable {
-    let id, label: String
-    let customFieldRequired: Bool
-    let value: String?
+    public let id, label: String
+    public let customFieldRequired: Bool
+    public let value: String?
 
     enum CodingKeys: String, CodingKey {
         case id = "Id"
@@ -77,12 +77,12 @@ public struct CustomField: Codable {
 
 // MARK: - Subscription
 public struct Subscription: Codable {
-    let id, status: String
-    let expiryDate: Date
-    let isIAP: Bool
-    let package: Package
-    let type, currencyCode: String?
-    let renewalDate: Date?
+    public let id, status: String
+    public let expiryDate: String?
+    public let isIAP: Bool?
+    public let package: Package?
+    public let type, currencyCode: String?
+    public let renewalDate: String?
 
     enum CodingKeys: String, CodingKey {
         case id = "Id"
@@ -98,11 +98,12 @@ public struct Subscription: Codable {
 
 // MARK: - Package
 public struct Package: Codable {
-    let id, name, title, packageDescription: String
-    let type: String
-    let amount: Int
-    let currencyCode, interval, duration: String
-    let trialDuration: String?
+    public let id, name, title, packageDescription: String?
+    public let type: String?
+    public let amount: Int?
+    public let currencyCode, interval, duration: String?
+    public let trialDuration: String?
+    public let hasFreeTrial : Bool?
 
     enum CodingKeys: String, CodingKey {
         case id = "Id"
@@ -115,6 +116,7 @@ public struct Package: Codable {
         case interval = "Interval"
         case duration = "Duration"
         case trialDuration = "TrialDuration"
+        case hasFreeTrial = "HasFreeTrial"
     }
 }
 
