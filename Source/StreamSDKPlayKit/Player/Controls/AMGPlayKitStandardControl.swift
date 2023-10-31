@@ -13,7 +13,7 @@ import PlayKit
  */
 
 
-class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
+public class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
 
     var isPlaying = true
     weak var player: AMGPlayerDelegate? = nil
@@ -545,17 +545,17 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         subtitlesButton.backgroundColor = selectorColors.count > 0 ? selectorColors.first : UIColor.black
     }
 
-    func play() {
+    public func play() {
         isPlaying = true
         playPause.setImage(pauseImage, for: .normal)
     }
 
-    func pause() {
+    public func pause() {
         isPlaying = false
         playPause.setImage(playImage, for: .normal)
     }
 
-    func changePlayHead(position: TimeInterval) {
+    public func changePlayHead(position: TimeInterval) {
         if !updatePlayHeadManually {
             if position <= 0 {
                 scrubBar.value = 0
@@ -587,7 +587,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         bottomScrubViewTrack.frame = CGRect(x: 0, y: 0, width: width, height: 2)
     }
 
-    func changeMediaLength(length: TimeInterval) {
+    public func changeMediaLength(length: TimeInterval) {
         mediaLength = length
         scrubBar.maximumValue = Float(length)
         scrubBar.value = 0
@@ -626,7 +626,7 @@ class AMGPlayKitStandardControl: UIView, AMGControlDelegate {
         return formattedTimeLeft
     }
 
-    func resize() {
+    public func resize() {
         let playPauseSize :CGFloat = 60
         let skipSize :CGFloat = 40
         let w = self.frame.width

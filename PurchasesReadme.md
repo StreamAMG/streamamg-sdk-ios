@@ -110,6 +110,7 @@ To react to any product lists or purchases made with the Purchases module, a del
 
 ``` Swift
 public protocol AMGPurchaseDelegate {
+    func purchaseSuccessfulWithoutValidation(payment: ReceiptPaymentModel?, error: StreamAMGError)
     func purchaseSuccessful(purchase: AMGInAppPurchase)
     func purchaseFailed(purchase: AMGInAppPurchase, error: StreamAMGError)
     func purchasesAvailable(purchases: [AMGInAppPurchase])
@@ -200,6 +201,14 @@ The following AMGPurchaseDelegate method :
 ```
 
 Will listen for a success (Receipt validated and entitlement added).
+
+To ensure that a purchase has been successfully validated and an entitlement added, the SDK will automatically attempt to validate the purchase in the StreamAMG backend API. If this validation fails because no JWT token was set in the SDK, the following callback will be triggered:
+
+
+``` Swift
+    func purchaseSuccessfulWithoutValidation(payment: ReceiptPaymentModel?, error: StreamAMGError)
+```
+In the event that automatic purchase validation fails, you will need to manually validate the purchase. Please refer to the "Validate a purchase" section for guidance on how to do this.
 
 A failed purchase or receipt validation issue will result in the following method being triggered:
 ``` Swift

@@ -19,16 +19,18 @@ import AVKit
  */
 @objc public class AMGPlayKit: UIView, AMGPlayerDelegate {
 
-    var playerView: PlayerView? = nil
     public var player: Player?
+
+    internal(set) public var playerView: PlayerView? = nil
+    internal(set) public var controlUI: AMGPlayKitStandardControl? = nil
+
     var partnerID: Int = 0
     
     internal var currentMedia: MediaItem? = nil
     internal var currentMediaType: AMGMediaType = .VOD
     
     weak internal var control: AMGControlDelegate? = nil
-    internal var controlUI: AMGPlayKitStandardControl? = nil
-    
+
     internal var controlVisibleDuration: TimeInterval = 5
     
     internal var skipForwardTime: TimeInterval = 5

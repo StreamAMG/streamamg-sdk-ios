@@ -219,6 +219,21 @@ auth.getKSWithToken(token: tokens.idToken, entryID: "0_validEntryID") { (result:
 }
 ```
 
+## Validate active session
+
+If you are using custom SSO, then to validate user or to get the user entitlements  use this method. Please pass the same token you used to start the custom SSO  session.
+
+```
+auth.validateActiveSession(token: tokens.idToken, entryID: "0_validEntryID") { (result: Result<LoginResponse, StreamAMGError>) in
+    switch result {
+    case .success(let response):
+        // response.1 
+    case .failure(let error):
+        // error includes the reason the Key Session is not provided
+    }
+}
+```
+
 Change Log:
 ===========
 

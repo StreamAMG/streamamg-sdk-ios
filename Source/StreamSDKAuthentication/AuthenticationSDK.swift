@@ -328,6 +328,40 @@ public class AuthenticationSDK {
             }
         }
     }
+    
+    /**
+     Performs a presence check for a user with the given token.
+
+     - Parameters:
+        - token: The user's authentication token.
+        - completion: A closure to be called when the presence check is complete, containing the result.
+
+     - Note: The presence check is used to determine the user's presence and retrieve user summary information.
+
+     - Returns: A result containing either the user summary response on success or an error on failure.
+     */
+    public func validateActiveSession(token: String, completion: ((Result<LoginResponse, StreamAMGError>) -> Void)?) {
+        // Ensure that the API URL is set.
+        guard let apiURL = url else {
+            let error = StreamAMGError(message: "Authentication API URL not set")
+            completion?(.failure(error))
+            return
+        }
+
+        // Send a request to perform the presence check.
+        StreamAMGSDK.sendRequest(validateActiveSessionCheckURL(url: apiURL, token: token)) { (result: Result<LoginResponse, StreamAMGError>) in
+            // Handle the result of the presence check.
+            switch result {
+            case .success(let data):
+                // Call the completion handler with the user summary response on success.
+                completion?(.success(data))
+            case .failure(let error):
+                // Call the completion handler with an error on failure.
+                completion?(.failure(error))
+            }
+        }
+    }
+
 
     
     func securelyStoreEmailAndPass(email: String, password: String){
@@ -416,7 +450,7 @@ public class AuthenticationSDK {
         return "\(url)/sso/start?token=\(token)\(addParameters(includeQuerySign: false))"
     }
     
-
-    
-    
+    func validateActiveSessionCheckURL(url: String, token: String) -> String{
+        return "\(url)/api/v1/session/prescence?apijwttoken=\(token)\(addParameters(includeQuerySign: false))"
+    }
 }
