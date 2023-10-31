@@ -96,7 +96,6 @@ More information about the individual modules can be found at their respective p
 
 - [Purchases](PurchasesReadme.md)
 
-
 Change Log:
 ---------------
 

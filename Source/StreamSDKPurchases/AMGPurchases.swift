@@ -53,11 +53,20 @@ public class AMGPurchases: IAPDelegate {
     ///   - payment: Payment model
     ///   - withJWTToken: User JWT Token
     public func validatePurchase(payment: ReceiptPaymentModel?, withJWTToken: String?) {
+        
+        
         guard
             let receiptUrl = Bundle.main.appStoreReceiptURL,
-            let receiptData = try? Data(contentsOf: receiptUrl),
+            let receiptData = try? Data(contentsOf: receiptUrl)
+        else {
+            self.delegate?.purchaseSuccessfulWithoutValidation(payment: payment, error: StreamAMGError(message: "The purchase was made successfully with the App Store but the SDK was not able to validate the purchase with AMG Backend, Receipt URL or Receipt Data are invalid."))
+            return
+        }
+        
+        guard
             let apiKey = withJWTToken, apiKey.count > 0
         else {
+            self.delegate?.purchaseSuccessfulWithoutValidation(payment: payment, error: StreamAMGError(message: "The purchase has been completed successfully through the AppStore. However, to validate the purchase with the AMG backend, you need to call the #validatePurchase  API using a custom JWT Token."))
             return
         }
         
