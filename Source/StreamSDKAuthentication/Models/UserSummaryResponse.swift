@@ -100,7 +100,7 @@ public struct Subscription: Codable {
 public struct Package: Codable {
     public let id, name, title, packageDescription: String?
     public let type: String?
-    public let amount: Int?
+    public let amount: Double?
     public let currencyCode, interval, duration: String?
     public let trialDuration: String?
     public let hasFreeTrial : Bool?
