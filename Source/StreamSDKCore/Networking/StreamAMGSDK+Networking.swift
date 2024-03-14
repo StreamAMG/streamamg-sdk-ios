@@ -42,7 +42,7 @@ extension StreamAMGSDK{
                     let responseObject = try JSONDecoder().decode(T.self, from: data)
                     completion?(.success(responseObject))
                 } catch {
-                    let streamError = StreamAMGError.init(message: error.localizedDescription)
+                    let streamError = StreamAMGError.init(message: String(describing: error))
                     if let httpResponse = response as? HTTPURLResponse {
                         streamError.code = httpResponse.statusCode
                     }

@@ -33,9 +33,9 @@ public struct UserSummaryResponse: Codable {
 
 // MARK: - BillingDetails
 public struct BillingDetails: Codable {
-    public let addressCountry, addressCity, addressLine1, addressLine2: String
-    public let addressState, addressZip: String
-    public let cardDetails: CardDetails
+    public let addressCountry, addressCity, addressLine1, addressLine2: String?
+    public let addressState, addressZip: String?
+    public let cardDetails: CardDetails?
 
     enum CodingKeys: String, CodingKey {
         case addressCountry = "AddressCountry"
@@ -50,8 +50,8 @@ public struct BillingDetails: Codable {
 
 // MARK: - CardDetails
 public struct CardDetails: Codable {
-    public let provider, reference, country: String
-    public let expires: Date
+    public let provider, reference, country: String?
+    public let expires: String?
 
     enum CodingKeys: String, CodingKey {
         case provider = "Provider"
@@ -63,7 +63,7 @@ public struct CardDetails: Codable {
 
 // MARK: - CustomField
 public struct CustomField: Codable {
-    public let id, label: String
+    public let id, label: String?
     public let customFieldRequired: Bool
     public let value: String?
 
@@ -100,7 +100,7 @@ public struct Subscription: Codable {
 public struct Package: Codable {
     public let id, name, title, packageDescription: String?
     public let type: String?
-    public let amount: Int?
+    public let amount: Double?
     public let currencyCode, interval, duration: String?
     public let trialDuration: String?
     public let hasFreeTrial : Bool?
