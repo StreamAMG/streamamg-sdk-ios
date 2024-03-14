@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this section.
 ### 1.3.1
 - Fixed Amount field that caused Sign up error
 - Changed error log message with more details
+- Fixed issue with Cloudpay login for paid users
 
 ### 1.3.0
 - Updated Authentication module with new methods validate active session with third party JWT tokens.
