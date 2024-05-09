@@ -54,7 +54,7 @@ Pod::Spec.new do |spec|
   spec.subspec 'PlayKit' do |playkit|
     playkit.source_files  = "Source/StreamSDKPlayKit/**/*.*"
     playkit.dependency 'PlayKit', '3.28.0'
-    playkit.dependency 'PlayKit_IMA', '1.15.0'
+    playkit.dependency 'PlayKit_IMA', '1.14.0'
     playkit.dependency 'PlayKitProviders', '1.18.3'
     playkit.dependency 'PlayKitYoubora', '1.15.0'
     playkit.resource_bundles = { 'AMGPlayKitBundle' => 'Source/Media/*.*'}
