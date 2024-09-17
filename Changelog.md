@@ -3,6 +3,10 @@ Change Log:
 
 All notable changes to this project will be documented in this section.
 
+### 1.3.3
+- Added new class for cloud matrix 'CloudMatrixAsync' that supports structured concurrency
+- Added support for pagination in SearchBuilder
+
 ### 1.3.2
 - Added Privacy Info
 - Updated PlayKit, IMA and Providers version

@@ -7,24 +7,24 @@
 
 import Foundation
 /**
-  Model returned when a SDK call is unavailable or reports an error
+ Model returned when a SDK call is unavailable or reports an error
  */
-public class StreamAMGError: Error {
+public class StreamAMGError: Error, Equatable {
     
-
+    
     var code: Int = -1
     
     var messages: [String] = []
     
     /**
-      Create a new error model with a defined error message
+     Create a new error model with a defined error message
      * @param message An error message
      */
     public init(message: String) {
         addMessage(message: message)
     }
     /**
-      Add a new error message to the array of messages
+     Add a new error message to the array of messages
      * @param message An error message
      */
     public func addMessage(message: String){
@@ -32,14 +32,14 @@ public class StreamAMGError: Error {
     }
     
     /**
-      Returns all error messages as an array of Strings
+     Returns all error messages as an array of Strings
      */
     public func getAllMessages() -> [String]{
         return messages
     }
     
     /**
-      Returns an error code - generally HTTP - for a failed call
+     Returns an error code - generally HTTP - for a failed call
      * Returns -1 if no code is available
      */
     public func getErrorCode() -> Int{
@@ -47,21 +47,24 @@ public class StreamAMGError: Error {
     }
     
     /**
-      Returns all error messages as a single concatted String
+     Returns all error messages as a single concatted String
      */
     public func getMessages() -> String {
-            var errorMessage: String = ""
+        var errorMessage: String = ""
         messages.forEach{message in
-                    if (errorMessage != ""){
-                            errorMessage += " | "
-                    }
-                    errorMessage += message
+            if (errorMessage != ""){
+                errorMessage += " | "
             }
-            if (errorMessage == ""){
-                    errorMessage = "No messages reported by API"
-            }
-            return errorMessage
+            errorMessage += message
+        }
+        if (errorMessage == ""){
+            errorMessage = "No messages reported by API"
+        }
+        return errorMessage
     }
     
-    
+    // Implement Equatable protocol
+    public static func == (lhs: StreamAMGError, rhs: StreamAMGError) -> Bool {
+        return lhs.code == rhs.code && lhs.messages == rhs.messages
+    }
 }
