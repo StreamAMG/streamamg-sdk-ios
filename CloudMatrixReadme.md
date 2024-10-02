@@ -70,6 +70,12 @@ You should instantiate CloudMatrix to use it.
 var cloudMatrix = CloudMatrix()
 ```
 
+Optionally if you want to make use of structured concurrency provided by async/await you can initiate as below,
+
+```
+var cloudMatrix = CloudMatrixAsync()
+```
+
 As many of these objects can be created as is required
 
 ##Creating a CloudMatrix set up object.
@@ -110,6 +116,19 @@ case .success(let cmData):
 case .failure(let cmError):
         // Process the valid cmError object (StreamAMGError) here
 }
+}
+```
+In case you are using structured concurrency using async/await, please make the call as below,
+```
+let request: CloudMatrixRequest = CloudMatrixRequest //(See below)
+
+do {
+  let data = try await cloudMatrix.callAPI(request: request)
+  return data
+} catch let error as StreamAMGError {
+    throw error
+} catch {
+    //throw a custom error
 }
 ```
 ##Accessing Static Feeds

@@ -7,7 +7,46 @@
 
 import Foundation
 
-extension StreamAMGSDK{
+extension StreamAMGSDK : StreamAMGSDKType{
+    
+    public func sendRequestAsync<T>(_ url: String, component: StreamSDKComponent) async -> Result<T, StreamAMGError> where T : Codable {
+        logNetworkCore(data: "URL: \(url)")
+        guard let validURL = URL(string: url.replacingOccurrences(of: " ", with: "%20")) else {
+            logErrorCore(data: "Invalid URL requested...... \(url)")
+            let error = StreamAMGError(message: "Invalid URL requested - \(url)")
+            return .failure(error)
+        }
+        
+        let session = URLSession(configuration: .default)
+        var urlRequest = URLRequest(url: validURL)
+        urlRequest.httpMethod = "GET"
+        
+        do {
+            let (data, response) = try await session.data(for: urlRequest)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                let error = StreamAMGError(message: "Invalid response")
+                return .failure(error)
+            }
+            
+            do {
+                let responseObject = try JSONDecoder().decode(T.self, from: data)
+                return .success(responseObject)
+            } catch {
+                let streamError = StreamAMGError(message: String(describing: error))
+                streamError.code = httpResponse.statusCode
+                StreamSDKLogger.instance.logError(entry: error.localizedDescription, tag: "STREAMSDK - \(component.rawValue)")
+                return .failure(streamError)
+            }
+        } catch {
+            let streamError = StreamAMGError(message: error.localizedDescription)
+            if let urlError = error as? URLError, let httpResponse = urlError.userInfo[NSURLErrorFailingURLErrorKey] as? HTTPURLResponse {
+                streamError.code = httpResponse.statusCode
+            }
+            StreamSDKLogger.instance.logError(entry: streamError.getMessages(), tag: "STREAMSDK - \(component.rawValue)")
+            return .failure(streamError)
+        }
+    }
     
     public static func sendRequest<T: Codable>(_ url: String, component: StreamSDKComponent = .CORE, completion: ((Result<T, StreamAMGError>) -> Void)?) {
         logNetworkCore(data: "URL: \(url)")

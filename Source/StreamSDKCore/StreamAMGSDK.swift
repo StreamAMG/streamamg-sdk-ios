@@ -57,3 +57,7 @@ public class StreamAMGSDK {
     }
 
 }
+
+public protocol StreamAMGSDKType {
+    func sendRequestAsync<T: Codable>(_ url: String, component: StreamSDKComponent) async -> Result<T, StreamAMGError>
+}

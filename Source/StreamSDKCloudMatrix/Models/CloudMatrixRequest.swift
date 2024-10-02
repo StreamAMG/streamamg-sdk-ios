@@ -28,12 +28,13 @@ public class CloudMatrixRequest {
      * @param url A URL that should be directly queried
      * @param paginateBy A requested number of items per page to be returned - default is 200
      */
-    public init(apiFunction: CloudMatrixFunction = CloudMatrixFunction.FEED, event: String? = nil, params: [SearchParameter] = [], url: String? = nil, paginateBy: Int = 0){
+    public init(apiFunction: CloudMatrixFunction = CloudMatrixFunction.FEED, event: String? = nil, params: [SearchParameter] = [], url: String? = nil, paginateBy: Int = 0, currrentPage: Int = 0){
         self.apiFunction = apiFunction
         self.event = event
         self.params = params
         self.url = url
         self.paginateBy = paginateBy
+        self.currentPage = currrentPage
     }
     
     internal func createURL() -> String {
@@ -210,6 +211,7 @@ public class CloudMatrixRequest {
         var urlObject: String? = nil
         var setup: CloudMatrixSetupModel? = nil
         var paginateObject: Int = 0
+        var currentPage: Int = 0
         
         public init(){
             
@@ -246,10 +248,18 @@ public class CloudMatrixRequest {
         }
         
         /**
+            Sets the page required for the current request
+         */
+        public func page(page : Int) -> FeedBuilder  {
+            self.currentPage = page
+            return self
+        }
+        
+        /**
          * Returns a valid CloudMatrixRequest
          */
         public func build() -> CloudMatrixRequest {
-            let request = CloudMatrixRequest(apiFunction: .FEED, event: eventObject, url: urlObject, paginateBy: paginateObject)
+            let request = CloudMatrixRequest(apiFunction: .FEED, event: eventObject, url: urlObject, paginateBy: paginateObject,currrentPage: currentPage)
             request.cmSetup = setup
             return request
         }
@@ -263,6 +273,7 @@ public class CloudMatrixRequest {
     public class SearchBuilder {
         var paramsObject: [SearchParameter] = []
         var paginateObject: Int = 0
+        var currentPage : Int = 0
         var setup: CloudMatrixSetupModel? = nil
         var workableURL: String? = nil
         
@@ -655,8 +666,13 @@ public class CloudMatrixRequest {
             return self
         }
         
+        public func page(_ page: Int) -> SearchBuilder {
+            self.currentPage = page
+            return self
+        }
+        
         public func build() -> CloudMatrixRequest {
-            let request = CloudMatrixRequest(apiFunction: .SEARCH, params: paramsObject, paginateBy: paginateObject)
+            let request = CloudMatrixRequest(apiFunction: .SEARCH, params: paramsObject, paginateBy: paginateObject, currrentPage: self.currentPage)
             request.cmSetup = setup
             request.url = workableURL
             return request
